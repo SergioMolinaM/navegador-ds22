@@ -39,6 +39,58 @@ const META = {
   source: "DS 22/2025 (MMA) — Diario Oficial 7 mayo 2026, edición 44.443",
 };
 
+// Sponsor de portada. Si active=true, el onboarding muestra el logo y un
+// claim "Presentado por". Si active=false, se ofrece el espacio.
+const SPONSOR = {
+  active: false,
+  name: "",
+  logo: "",   // URL absoluta o data URI
+  url: "",    // sitio del sponsor
+};
+
+// Tips guiados por sección — globos tipo comic con avatar PC.
+const TIPS = {
+  inicio: [
+    { text: "Estos son los datos clave del decreto. Cada cifra proviene del texto oficial firmado. Navega por las pestañas para explorar metas, obligaciones y plazos." },
+  ],
+  verificador: [
+    { text: "Responde estas preguntas sobre tu producto y te diremos si estás regulado por el decreto, qué categoría te corresponde y qué pasos seguir." },
+    { text: "El resultado es orientativo. Para una confirmación formal, consulta con tu asesor legal citando los artículos indicados." },
+  ],
+  metas: [
+    { text: "¿No sabes qué meta te toca? Selecciona tu tipo de producto en «¿Qué me toca a mí?» y te mostramos exactamente qué metas debes cumplir y desde cuándo." },
+    { text: "Las barras coloreadas muestran el avance año a año hasta la saturación. Haz clic en cada categoría (General, AIT, PFV, Pilas) para ver la fórmula de cumplimiento." },
+  ],
+  actores: [
+    { text: "Busca por actor (productor, comercializador, gestor…) o por palabra clave. Cada obligación trae la referencia al artículo del decreto." },
+  ],
+  plazos: [
+    { text: "Los hitos en verde ya ocurrieron. Los grises son los que vienen. El más importante: mayo 2028, cuando las metas se hacen exigibles." },
+  ],
+  exclusiones: [
+    { text: "Lista exhaustiva de productos y supuestos fuera del ámbito del decreto. Cada exclusión cita el artículo del DS 22/2025 que la fundamenta." },
+  ],
+  contexto: [
+    { text: "Estas declaraciones provienen de notas publicadas en medios verificables. Las cifras de los Considerandos son estimaciones del MMA, no datos de cumplimiento." },
+  ],
+};
+
+// KPIs verificados del decreto firmado — para portada del onboarding.
+const HERO_KPIS = [
+  { icon: "📦", label: "Introducción al mercado 2025",
+    value: "3.000 t pilas · 279.600 t AEE",
+    ref: "Considerando 3°" },
+  { icon: "♻️", label: "Tasa de reciclaje actual",
+    value: "≈ 4,9 %",
+    ref: "Considerando 4°" },
+  { icon: "📈", label: "Meta general 10 años",
+    value: "3 % → 45 %",
+    ref: "Art. 21" },
+  { icon: "🔌", label: "Categorías AEE reguladas",
+    value: "AIT · PFV · Otros",
+    ref: "Art. 4°" },
+];
+
 // Créditos editoriales — quien aparece acá da credibilidad. Editable.
 const CREDITOS = [
   { rol: "Investigación y redacción", quien: "Equipo País Circular" },
@@ -54,15 +106,15 @@ const CREDITOS = [
 const COMPARATIVA_REP = [
   {
     producto: "Neumáticos", articulo: "Art. 10 Ley 20.920",
-    decreto: "DS 8/2019, MMA", do: "20 ene 2021",
+    decreto: "DS 8/2019, MMA", do: "Por verificar",
     estado: "Vigente", color: T.accent,
-    nota: "Primer decreto de metas REP publicado. Metas escalonadas hasta 90 % al noveno año.",
+    nota: "Primer decreto de metas REP de Chile. Fecha exacta de publicación en DO por verificar contra Diario Oficial.",
   },
   {
     producto: "Envases y embalajes", articulo: "Art. 10 Ley 20.920",
     decreto: "DS 12/2020, MMA", do: "16 mar 2021",
     estado: "Vigente", color: T.accent,
-    nota: "Categorías: cartón, metal, plástico, vidrio y tetra. Metas diferenciadas por material.",
+    nota: "Categorías por material (cartón, metal, plástico, vidrio, tetra). Metas año 1 exigibles desde sept 2023.",
   },
   {
     producto: "Pilas y AEE",
@@ -76,13 +128,13 @@ const COMPARATIVA_REP = [
     articulo: "Art. 10 Ley 20.920",
     decreto: "En tramitación", do: "—",
     estado: "En consulta", color: T.textHint,
-    nota: "Anteproyecto del decreto de metas en proceso de consulta pública y AGIES.",
+    nota: "Anteproyecto del decreto de metas en proceso regulatorio. Estado actualizado por verificar contra MMA.",
   },
   {
     producto: "Baterías", articulo: "Art. 10 Ley 20.920",
     decreto: "En tramitación", do: "—",
     estado: "En consulta", color: T.textHint,
-    nota: "Considera baterías de litio y plomo-ácido. Anteproyecto del decreto en elaboración.",
+    nota: "Considera baterías de litio y plomo-ácido. Anteproyecto del decreto en elaboración. Por verificar contra MMA.",
   },
 ];
 
@@ -346,7 +398,7 @@ const GLOSARIO = {
 // ─── SECTIONS ────────────────────────────────────────────────────
 const PAGES = [
   { id: "inicio",      label: "Resumen",       icon: "📋" },
-  { id: "micaso",      label: "Mi caso",       icon: "🧭" },
+  { id: "verificador", label: "¿Estoy regulado?", icon: "🔍" },
   { id: "metas",       label: "Metas",         icon: "📊" },
   { id: "actores",     label: "Obligaciones",  icon: "👤" },
   { id: "plazos",      label: "Plazos",        icon: "📅" },
@@ -565,16 +617,127 @@ function FormularioNetlify({ mode = "newsletter" }) {
   );
 }
 
-function Onboarding({ onStart }) {
+// ─── TIPSCREEN (globo guía con avatar PC) ──────────────────────
+function TipBubble({ tips, onClose }) {
+  const [step, setStep] = useState(0);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const t = setTimeout(() => setVisible(true), 30);
+    return () => clearTimeout(t);
+  }, []);
+
+  if (!tips || tips.length === 0) return null;
+  const current = tips[step];
+  const last = step === tips.length - 1;
+
+  const close = () => {
+    setVisible(false);
+    setTimeout(() => onClose && onClose(), 160);
+  };
+
+  const next = () => {
+    if (last) close(); else setStep(step + 1);
+  };
+
+  return (
+    <div style={{
+      position: "fixed", left: "50%", bottom: 80,
+      zIndex: 90, maxWidth: 360, width: "calc(100% - 32px)",
+      opacity: visible ? 1 : 0,
+      transition: "opacity 0.16s ease-out, transform 0.25s ease-out",
+      transform: `translateX(-50%) translateY(${visible ? 0 : 8}px)`,
+    }}>
+      <div style={{
+        position: "relative",
+        background: "#FFFFFF",
+        border: `1px solid rgba(29,158,117,0.30)`,
+        borderRadius: 14,
+        padding: "16px 18px 14px",
+        boxShadow: "0 8px 30px rgba(0,0,0,0.12)",
+        fontFamily: T.font,
+      }}>
+        {/* Avatar PC */}
+        <div style={{
+          position: "absolute", top: -14, left: 14,
+          width: 28, height: 28, borderRadius: "50%",
+          background: T.accentDark, color: "#fff",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          fontSize: 11, fontWeight: 700, letterSpacing: "0.02em",
+          boxShadow: "0 2px 6px rgba(0,0,0,0.15)", fontFamily: T.fontSans,
+        }}>PC</div>
+
+        {/* Cerrar */}
+        <button onClick={close} aria-label="Cerrar tip" style={{
+          position: "absolute", top: 8, right: 10, border: "none", background: "transparent",
+          cursor: "pointer", fontSize: 14, color: T.textHint, fontWeight: 600, padding: 4,
+          lineHeight: 1,
+        }}>✕</button>
+
+        <div style={{ marginTop: 6, marginRight: 16, marginLeft: 18 }}>
+          <div style={{
+            fontSize: 13, color: T.text, lineHeight: 1.55, fontFamily: T.font,
+          }}>{current.text}</div>
+        </div>
+
+        <div style={{
+          marginTop: 12, display: "flex", alignItems: "center", justifyContent: "space-between",
+          gap: 10,
+        }}>
+          <span style={{
+            fontSize: 10.5, color: T.textHint, fontWeight: 600,
+            letterSpacing: "0.06em", fontFamily: T.fontSans,
+          }}>
+            {tips.length > 1 ? `${step + 1} / ${tips.length}` : ""}
+          </span>
+          <button onClick={next} className="pc-cta" style={{
+            padding: "7px 14px", fontSize: 12, fontWeight: 700, borderRadius: 8,
+            border: "none", background: T.accentDark, color: "#fff",
+            cursor: "pointer", fontFamily: T.fontSans, letterSpacing: "0.01em",
+            transition: "all 0.18s",
+          }}>
+            {last ? "Entendido ✓" : "Siguiente →"}
+          </button>
+        </div>
+
+        {/* Punta apuntando hacia abajo */}
+        <div style={{
+          position: "absolute", bottom: -8, left: "50%", transform: "translateX(-50%)",
+          width: 14, height: 14, background: "#fff",
+          borderRight: `1px solid rgba(29,158,117,0.30)`,
+          borderBottom: `1px solid rgba(29,158,117,0.30)`,
+          rotate: "45deg",
+        }} />
+      </div>
+    </div>
+  );
+}
+
+function HelpButton({ onClick }) {
+  return (
+    <button onClick={onClick} aria-label="Mostrar ayuda" title="Ayuda" style={{
+      position: "fixed", bottom: 20, right: 20, zIndex: 80,
+      width: 44, height: 44, borderRadius: "50%",
+      background: T.accentDark, color: "#fff", border: "none",
+      cursor: "pointer", fontSize: 20, fontWeight: 700,
+      boxShadow: "0 4px 16px rgba(0,0,0,0.2)",
+      display: "flex", alignItems: "center", justifyContent: "center",
+      fontFamily: T.fontSans, transition: "all 0.18s",
+    }}>?</button>
+  );
+}
+
+function Onboarding({ onStart, onOpenAuspicio }) {
   return (
     <div style={{
       maxWidth: 800, margin: "0 auto", fontFamily: T.fontSans, color: T.text,
       border: `1px solid ${T.border}`, borderRadius: 12, overflow: "hidden", background: T.bg,
     }}>
+      {/* ── SECCIÓN 1 · HEADER GRADIENTE ── */}
       <div style={{
         position: "relative",
         background: "linear-gradient(135deg, #1B4332 0%, #2D6A4F 50%, #1D9E75 100%)",
-        padding: "56px 32px 48px", color: "#fff", textAlign: "center",
+        padding: "48px 32px 40px", color: "#fff", textAlign: "center",
       }}>
         <div style={{
           position: "absolute", inset: 0, opacity: 0.08,
@@ -583,38 +746,145 @@ function Onboarding({ onStart }) {
         }} />
         <img src="https://www.paiscircular.cl/wp-content/uploads/2022/08/cropped-Logo-Pais-Letras-Negras-270x270.png"
           alt="País Circular" style={{
-            height: 64, width: 64, objectFit: "contain", background: "#fff",
-            borderRadius: 12, padding: 8, marginBottom: 18,
+            height: 56, width: 56, objectFit: "contain", background: "#fff",
+            borderRadius: 12, padding: 6, marginBottom: 14,
             boxShadow: "0 6px 20px rgba(0,0,0,0.18)",
           }} />
         <div style={{
           fontSize: 11, letterSpacing: "0.18em", textTransform: "uppercase",
-          opacity: 0.85, marginBottom: 12, fontWeight: 600,
+          opacity: 0.85, marginBottom: 14, fontWeight: 600,
         }}>País Circular presenta</div>
         <h1 style={{
-          fontSize: 28, fontWeight: 700, lineHeight: 1.25, margin: "0 0 14px",
-          fontFamily: T.font, letterSpacing: "-0.02em", maxWidth: 560, marginLeft: "auto", marginRight: "auto",
+          fontSize: 34, fontWeight: 700, lineHeight: 1.15, margin: "0 0 12px",
+          fontFamily: T.font, letterSpacing: "-0.025em", maxWidth: 560,
+          marginLeft: "auto", marginRight: "auto",
         }}>
-          El primer navegador interactivo de un decreto de metas de la Ley REP en Chile
+          Todo sobre el DS 22/2025
         </h1>
         <p style={{
-          fontSize: 15, lineHeight: 1.65, margin: "0 auto 28px", maxWidth: 520,
+          fontSize: 15.5, lineHeight: 1.55, margin: "0 auto", maxWidth: 540,
           opacity: 0.94, fontFamily: T.font,
         }}>
-          Explore el DS 22/2025: qué productos regula, qué metas establece, qué obligaciones impone y a quién afecta.
+          El decreto que regula pilas y aparatos eléctricos y electrónicos bajo la Ley REP.
         </p>
+      </div>
+
+      {/* ── SECCIÓN 2 · KPIs DE IMPACTO ── */}
+      <div style={{ padding: "26px 24px 20px", background: T.bg }}>
+        <div style={{
+          fontSize: 10.5, color: T.accentDark, fontWeight: 700, letterSpacing: "0.08em",
+          textTransform: "uppercase", marginBottom: 14, textAlign: "center",
+        }}>Cifras del decreto</div>
+        <div style={{
+          display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+          gap: 10,
+        }}>
+          {HERO_KPIS.map((k, i) => (
+            <div key={i} style={{
+              background: T.bgAlt, border: `1px solid ${T.border}`, borderRadius: T.radius,
+              padding: "16px 14px", display: "flex", gap: 12, alignItems: "flex-start",
+            }}>
+              <div style={{
+                fontSize: 22, lineHeight: 1, flexShrink: 0, marginTop: 2,
+              }}>{k.icon}</div>
+              <div style={{ minWidth: 0 }}>
+                <div style={{
+                  fontSize: 10, color: T.textHint, fontWeight: 600, letterSpacing: "0.04em",
+                  textTransform: "uppercase", marginBottom: 4, fontFamily: T.fontSans,
+                }}>{k.label}</div>
+                <div style={{
+                  fontSize: 14, fontWeight: 700, color: T.text, lineHeight: 1.3,
+                  fontFamily: T.fontSans, letterSpacing: "-0.01em", marginBottom: 4,
+                }}>{k.value}</div>
+                <div style={{
+                  fontSize: 10.5, color: T.accent, fontWeight: 600, fontFamily: T.fontSans,
+                }}>{k.ref}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── SECCIÓN 3 · SPONSOR SLOT ── */}
+      <div style={{ padding: "0 24px 22px" }}>
+        {SPONSOR.active ? (
+          <a href={SPONSOR.url || "#"} target="_blank" rel="noopener noreferrer" style={{
+            display: "flex", alignItems: "center", justifyContent: "center", gap: 14,
+            padding: "16px 20px", background: "#FFFFFF",
+            border: `1.5px solid ${T.accentDark}`, borderRadius: T.radius, textDecoration: "none",
+            transition: "all 0.18s",
+          }}>
+            <span style={{
+              fontSize: 10, color: T.textHint, fontWeight: 600, letterSpacing: "0.1em",
+              textTransform: "uppercase", fontFamily: T.fontSans,
+            }}>Presentado por</span>
+            {SPONSOR.logo && (
+              <img src={SPONSOR.logo} alt={SPONSOR.name}
+                style={{ height: 28, width: "auto", objectFit: "contain" }} />
+            )}
+            <span style={{
+              fontSize: 14, fontWeight: 700, color: T.text, fontFamily: T.fontSans,
+            }}>{SPONSOR.name}</span>
+          </a>
+        ) : (
+          <div style={{
+            padding: "18px 20px", border: `2px dashed ${T.border}`, borderRadius: T.radius,
+            background: T.bgAlt, textAlign: "center",
+          }}>
+            <div style={{
+              fontSize: 10.5, color: T.accentDark, fontWeight: 700, letterSpacing: "0.1em",
+              textTransform: "uppercase", marginBottom: 6, fontFamily: T.fontSans,
+            }}>Espacio sponsor disponible</div>
+            <div style={{
+              fontSize: 14, fontWeight: 700, color: T.text, marginBottom: 4,
+              fontFamily: T.fontSans, letterSpacing: "-0.01em",
+            }}>
+              Este navegador puede ser presentado por tu empresa
+            </div>
+            <div style={{
+              fontSize: 12.5, color: T.textSec, lineHeight: 1.5, marginBottom: 10,
+              fontFamily: T.font, maxWidth: 460, marginLeft: "auto", marginRight: "auto",
+            }}>
+              Auspicie la portada del primer navegador interactivo de un decreto REP en Chile.
+            </div>
+            <button onClick={onOpenAuspicio} className="pc-link" style={{
+              background: "transparent", border: "none", cursor: "pointer",
+              fontSize: 12.5, fontWeight: 700, color: T.accentDark, fontFamily: T.fontSans,
+              padding: 0, borderBottom: `1.5px solid ${T.accent}`,
+            }}>
+              Más información →
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* ── SECCIÓN 4 · CTA ── */}
+      <div style={{
+        padding: "20px 24px 28px", textAlign: "center",
+        borderTop: `1px solid ${T.borderLight}`,
+      }}>
         <button onClick={onStart} className="pc-cta" style={{
-          padding: "13px 26px", fontSize: 14, fontWeight: 700, borderRadius: 10,
-          border: "none", background: "#fff", color: "#1B4332", cursor: "pointer",
+          padding: "14px 32px", fontSize: 15, fontWeight: 700, borderRadius: 10,
+          border: "none",
+          background: "linear-gradient(135deg, #1B4332 0%, #2D6A4F 100%)",
+          color: "#fff", cursor: "pointer",
           fontFamily: T.fontSans, letterSpacing: "0.01em",
-          boxShadow: "0 4px 14px rgba(0,0,0,0.18)", transition: "all 0.2s",
+          boxShadow: "0 6px 20px rgba(27,67,50,0.25)", transition: "all 0.2s",
         }}>
           Explorar el decreto →
         </button>
+        <div style={{
+          fontSize: 11.5, color: T.textHint, marginTop: 12, fontFamily: T.fontSans,
+          letterSpacing: "0.02em",
+        }}>
+          49 artículos · 6 títulos · Todo verificado contra el texto oficial
+        </div>
       </div>
+
       <div style={{
-        padding: "18px 24px", fontSize: 11.5, color: T.textHint, textAlign: "center",
-        borderTop: `1px solid ${T.border}`, lineHeight: 1.7, fontFamily: T.fontSans,
+        padding: "14px 24px 16px", fontSize: 11, color: T.textHint, textAlign: "center",
+        borderTop: `1px solid ${T.borderLight}`, lineHeight: 1.65, fontFamily: T.fontSans,
+        background: T.bgAlt,
       }}>
         Decreto Supremo N° 22/2025 · Ministerio del Medio Ambiente<br />
         <a href="https://www.diariooficial.interior.gob.cl/publicaciones/2026/05/07/44443/01/2805526.pdf"
@@ -623,7 +893,7 @@ function Onboarding({ onStart }) {
             color: T.accentDark, textDecoration: "none", fontWeight: 600,
             borderBottom: `1px solid ${T.accentLight}`, paddingBottom: 1,
           }}>
-          Decreto publicado en el Diario Oficial el 7 de mayo de 2026 (PDF) ↗
+          Publicado en el Diario Oficial el 7 de mayo de 2026 (PDF) ↗
         </a>
       </div>
     </div>
@@ -734,27 +1004,30 @@ const VERIFICADOR_PASOS = [
   {
     id: "energia",
     q: "¿Tu producto necesita corriente eléctrica o campos electromagnéticos para funcionar?",
-    help: "Esta es la prueba básica para que un aparato sea considerado AEE (art. 2° N°2). Las pilas siempre cumplen esta condición.",
+    help: "Es la prueba básica para que un aparato sea considerado AEE: si no depende de electricidad ni de campos electromagnéticos, no es AEE y queda fuera del ámbito del decreto. Las pilas siempre cumplen esta condición por definición (art. 2° N°13).",
+    helpRef: "Art. 2° N°2",
     opciones: [
       { label: "Sí — depende de electricidad", value: "si" },
       { label: "No — funcionamiento mecánico/manual", value: "no", veredicto: "fuera",
+        ref: "Art. 2° N°2",
         razon: "Si el producto no requiere corriente eléctrica ni campos electromagnéticos, no es AEE y queda fuera del ámbito del DS 22/2025." },
     ],
   },
   {
     id: "exclusion",
     q: "¿Tu producto cae en alguna de estas exclusiones del art. 3°?",
-    help: "Si marcas alguna, el producto queda fuera del ámbito (salvo que la regla particular indique otra cosa).",
+    help: "El art. 3° del decreto enumera 8 supuestos de exclusión taxativos (letras a–h). Si tu producto cae en cualquiera de ellos, no se le aplican las metas ni las obligaciones asociadas. Las pilas de plomo-ácido están excluidas por el art. 2° N°13.",
+    helpRef: "Art. 3° del DS 22/2025",
     multi: true,
     opciones: [
-      { label: "Es material militar, armas o municiones", value: "militar", veredicto: "fuera" },
-      { label: "Es herramienta industrial fija de gran envergadura (>2 ton o >15 m³)", value: "industrial", veredicto: "fuera" },
-      { label: "Forma parte de una instalación fija de gran envergadura (4 requisitos copulativos)", value: "instalacion", veredicto: "fuera" },
-      { label: "Es un medio de transporte con permiso de circulación", value: "transporte", veredicto: "fuera" },
-      { label: "Es maquinaria móvil fuera de ruta de uso exclusivamente profesional", value: "fueraruta", veredicto: "fuera" },
-      { label: "Es exclusivamente para investigación y desarrollo (uso profesional)", value: "id", veredicto: "fuera" },
-      { label: "Está instalado como componente de un aparato ya excluido", value: "componente", veredicto: "fuera" },
-      { label: "Es una pila de composición plomo-ácido", value: "plomo", veredicto: "fuera",
+      { label: "Es material militar, armas o municiones", value: "militar", veredicto: "fuera", ref: "Art. 3° a" },
+      { label: "Es herramienta industrial fija de gran envergadura (>2 ton o >15 m³)", value: "industrial", veredicto: "fuera", ref: "Art. 3° b" },
+      { label: "Forma parte de una instalación fija de gran envergadura (4 requisitos copulativos)", value: "instalacion", veredicto: "fuera", ref: "Art. 3° c" },
+      { label: "Es un medio de transporte con permiso de circulación", value: "transporte", veredicto: "fuera", ref: "Art. 3° d" },
+      { label: "Es maquinaria móvil fuera de ruta de uso exclusivamente profesional", value: "fueraruta", veredicto: "fuera", ref: "Art. 3° e" },
+      { label: "Es exclusivamente para investigación y desarrollo (uso profesional)", value: "id", veredicto: "fuera", ref: "Art. 3° f" },
+      { label: "Está instalado como componente de un aparato ya excluido", value: "componente", veredicto: "fuera", ref: "Art. 3° g" },
+      { label: "Es una pila de composición plomo-ácido", value: "plomo", veredicto: "fuera", ref: "Art. 2° N°13",
         razon: "Las pilas de plomo-ácido están expresamente excluidas (art. 2° N°13)." },
       { label: "Ninguna de las anteriores", value: "ninguna" },
     ],
@@ -762,9 +1035,10 @@ const VERIFICADOR_PASOS = [
   {
     id: "micro",
     q: "¿Tu empresa califica como microempresa según la Ley 20.416?",
-    help: "Microempresa = ventas anuales hasta 2.400 UF. Las microempresas están exentas de metas y obligaciones asociadas, pero deben informar al MMA (art. 9°).",
+    help: "Microempresa = ventas anuales hasta 2.400 UF (Ley 20.416). Las microempresas están exentas de metas y obligaciones asociadas, pero conservan la obligación de informar al MMA. Si tu empresa supera el umbral en el futuro, te aplicarán todas las metas.",
+    helpRef: "Art. 6° inc. 2° · Art. 9°",
     opciones: [
-      { label: "Sí, somos microempresa", value: "si", veredicto: "exenta",
+      { label: "Sí, somos microempresa", value: "si", veredicto: "exenta", ref: "Art. 6° inc. 2°",
         razon: "Estás exenta de metas y obligaciones asociadas, pero conservas la obligación de informar al MMA (art. 9°)." },
       { label: "No, somos pequeña, mediana o gran empresa", value: "no" },
     ],
@@ -772,12 +1046,13 @@ const VERIFICADOR_PASOS = [
   {
     id: "tipo",
     q: "¿Qué tipo de producto introduces al mercado?",
-    help: "El tipo determina qué metas específicas se suman a la meta general.",
+    help: "El decreto reconoce tres categorías de AEE (AIT, PFV y otros AEE) más pilas como producto prioritario independiente. La categoría define qué metas específicas se suman a la meta general — o, en el caso de PFV, qué meta única aplica.",
+    helpRef: "Arts. 2° y 4°",
     opciones: [
-      { label: "Pilas (no plomo-ácido)", value: "pilas",   veredicto: "dentro_pilas" },
-      { label: "Aparatos de intercambio de temperatura (refrigeradores, A/C)", value: "ait", veredicto: "dentro_ait" },
-      { label: "Paneles fotovoltaicos (PFV)", value: "pfv", veredicto: "dentro_pfv" },
-      { label: "Otros AEE (celulares, computadores, electrodomésticos, etc.)", value: "general", veredicto: "dentro_general" },
+      { label: "Pilas (no plomo-ácido)", value: "pilas",   veredicto: "dentro_pilas",   ref: "Art. 2° N°13" },
+      { label: "Aparatos de intercambio de temperatura (refrigeradores, A/C)", value: "ait", veredicto: "dentro_ait", ref: "Art. 2° N°1" },
+      { label: "Paneles fotovoltaicos (PFV)", value: "pfv", veredicto: "dentro_pfv", ref: "Art. 2° N°12" },
+      { label: "Otros AEE (celulares, computadores, electrodomésticos, etc.)", value: "general", veredicto: "dentro_general", ref: "Art. 2° N°2" },
     ],
   },
 ];
@@ -791,13 +1066,14 @@ const VEREDICTOS = {
   dentro_general:  { color: T.accent,   bg: T.accentLight, icon: "✓", title: "Productor general AEE · Cumple meta general" },
 };
 
-function VerificadorAmbito() {
+function VerificadorAmbito({ onJumpToMetas }) {
   // eslint-disable-next-line no-unused-vars
   const [respuestas, setRespuestas] = useState({});
   const [idx, setIdx] = useState(0);
   const [veredicto, setVeredicto] = useState(null);
+  const [showHelp, setShowHelp] = useState(false);
 
-  const reset = () => { setRespuestas({}); setIdx(0); setVeredicto(null); };
+  const reset = () => { setRespuestas({}); setIdx(0); setVeredicto(null); setShowHelp(false); };
 
   const responder = (opt, paso) => {
     if (paso.multi) {
@@ -881,30 +1157,91 @@ function VerificadorAmbito() {
           )}
         </div>
 
+        {/* ─── ¿QUÉ SIGUE? ─── */}
         <div style={{
           background: T.bgAlt, border: `1px solid ${T.border}`, borderRadius: T.radius,
-          padding: "14px 16px", marginBottom: 14,
+          padding: "16px 18px", marginBottom: 14,
         }}>
-          <div style={s.label}>Próximos pasos sugeridos</div>
+          <div style={{
+            fontSize: 11, fontWeight: 700, color: T.accentDark, letterSpacing: "0.08em",
+            textTransform: "uppercase", marginBottom: 10, fontFamily: T.fontSans,
+          }}>¿Qué sigue?</div>
+
           {veredicto.v === "fuera" ? (
-            <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13, color: T.textSec, lineHeight: 1.75, fontFamily: T.font }}>
-              <li>Revisa la sección «Exclusiones» para confirmar la causal exacta.</li>
-              <li>Si tu modelo de negocio cambia o introduces otras líneas, vuelve a correr el verificador.</li>
-            </ul>
+            <div>
+              <p style={{ fontSize: 13.5, color: T.text, lineHeight: 1.65, margin: "0 0 10px", fontFamily: T.font }}>
+                Tu producto está <strong>excluido del ámbito</strong> del DS 22/2025
+                {veredicto.opt?.ref && <> según <span style={{ color: T.accent, fontWeight: 600 }}>{veredicto.opt.ref}</span></>}.
+              </p>
+              <p style={{ fontSize: 12.5, color: T.textSec, lineHeight: 1.65, margin: "0 0 10px", fontFamily: T.font }}>
+                Sin embargo, <strong>si también introduces al mercado otros AEE o pilas que sí están regulados</strong>,
+                debes cumplir el decreto respecto de esos productos.
+              </p>
+              <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13, color: T.textSec, lineHeight: 1.75, fontFamily: T.font }}>
+                <li>Revisa la sección «Exclusiones» para confirmar la causal exacta.</li>
+                <li>Si tu modelo de negocio cambia, vuelve a correr el verificador.</li>
+              </ul>
+            </div>
           ) : veredicto.v === "exenta" ? (
-            <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13, color: T.textSec, lineHeight: 1.75, fontFamily: T.font }}>
-              <li>Inscríbete en la <Term t="RETC" /> de todas formas: la obligación de informar se mantiene (art. 9°).</li>
-              <li>Si tu empresa supera el umbral de microempresa en el futuro, te aplicarán todas las metas.</li>
-            </ul>
+            <div>
+              <p style={{ fontSize: 13.5, color: T.text, lineHeight: 1.65, margin: "0 0 10px", fontFamily: T.font }}>
+                Como microempresa, estás <strong>exenta de metas y obligaciones asociadas</strong>, pero
+                conservas la obligación de informar al MMA (art. 9°).
+              </p>
+              <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13, color: T.textSec, lineHeight: 1.75, fontFamily: T.font }}>
+                <li>Inscríbete en la <Term t="RETC" /> de todas formas.</li>
+                <li>Si tu empresa supera el umbral de microempresa en el futuro, te aplicarán todas las metas.</li>
+              </ul>
+            </div>
           ) : (
-            <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13, color: T.textSec, lineHeight: 1.75, fontFamily: T.font }}>
-              <li>Inscríbete en la <Term t="RETC" /> dentro de 4 meses desde tu primera introducción al mercado (art. 8°).</li>
-              <li>Convene o constituye un sistema de gestión: individual o colectivo (<Term t="GRANSIC" />).</li>
-              <li>Presenta tu plan de gestión antes de agosto 2027 (15 meses desde DO, art. 5° transitorio).</li>
-              <li>Usa la pestaña «Calcular meta» para estimar tus toneladas a valorizar.</li>
-            </ul>
+            <div>
+              <p style={{ fontSize: 13.5, color: T.text, lineHeight: 1.65, margin: "0 0 12px", fontFamily: T.font }}>
+                Tu producto <strong>está regulado</strong> por el DS 22/2025.
+                Las metas son exigibles desde <strong>mayo 2028</strong> — tienes hasta entonces para organizarte.
+              </p>
+              <div style={{ display: "grid", gap: 8, marginBottom: 14 }}>
+                {[
+                  { n: 1, t: <>Inscribirse en la <Term t="RETC" /> dentro de 4 meses desde la primera introducción al mercado.</>, ref: "Art. 8°" },
+                  { n: 2, t: <>Incorporarse a un sistema de gestión (individual o colectivo <Term t="GRANSIC" />).</>, ref: "Art. 10°" },
+                  { n: 3, t: <>Presentar plan de gestión antes de <strong>agosto 2027</strong> (15 meses desde DO).</>, ref: "Art. 5° transitorio" },
+                ].map(p => (
+                  <div key={p.n} style={{
+                    display: "grid", gridTemplateColumns: "auto 1fr auto", gap: 12, alignItems: "flex-start",
+                    padding: "10px 12px", background: T.bg, borderRadius: T.radiusSm,
+                    border: `1px solid ${T.borderLight}`,
+                  }}>
+                    <div style={{
+                      width: 24, height: 24, borderRadius: "50%", background: T.accent, color: "#fff",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      fontWeight: 700, fontSize: 12, flexShrink: 0, fontFamily: T.fontSans,
+                    }}>{p.n}</div>
+                    <div style={{ fontSize: 13, color: T.text, lineHeight: 1.55, fontFamily: T.font }}>{p.t}</div>
+                    <div style={{
+                      fontSize: 10.5, color: T.accent, fontWeight: 600, fontFamily: T.fontSans,
+                      whiteSpace: "nowrap", paddingTop: 4,
+                    }}>{p.ref}</div>
+                  </div>
+                ))}
+              </div>
+              {onJumpToMetas && veredicto.v.startsWith("dentro_") && (
+                <button onClick={() => onJumpToMetas(veredicto.v.replace("dentro_", ""))} className="pc-cta" style={{
+                  padding: "10px 20px", fontSize: 13, fontWeight: 700, borderRadius: T.radius,
+                  border: "none",
+                  background: "linear-gradient(135deg, #1B4332 0%, #2D6A4F 100%)",
+                  color: "#fff", cursor: "pointer",
+                  fontFamily: T.fontSans, letterSpacing: "0.01em",
+                  boxShadow: "0 3px 10px rgba(27,67,50,0.20)", transition: "all 0.18s",
+                }}>
+                  Ver mis metas →
+                </button>
+              )}
+            </div>
           )}
         </div>
+
+        <p style={{ fontSize: 11, color: T.textHint, fontStyle: "italic", margin: "0 0 12px", lineHeight: 1.5, fontFamily: T.font }}>
+          Este resultado es orientativo. Para una confirmación formal, consulta con tu asesor legal citando los artículos indicados.
+        </p>
 
         <button onClick={reset} className="pc-btn" style={{
           padding: "9px 18px", fontSize: 12.5, fontWeight: 600, borderRadius: T.radius,
@@ -944,12 +1281,40 @@ function VerificadorAmbito() {
       </div>
 
       <h3 style={{
-        fontSize: 17, fontWeight: 700, lineHeight: 1.35, margin: "0 0 8px",
+        fontSize: 17, fontWeight: 700, lineHeight: 1.35, margin: "0 0 10px",
         fontFamily: T.font, color: T.text,
       }}>{paso.q}</h3>
-      <p style={{ fontSize: 12.5, color: T.textSec, lineHeight: 1.6, margin: "0 0 16px", fontFamily: T.font }}>
-        {paso.help}
-      </p>
+
+      {/* Help colapsable */}
+      <button onClick={() => setShowHelp(s => !s)} style={{
+        background: "transparent", border: "none", cursor: "pointer", padding: 0,
+        display: "inline-flex", alignItems: "center", gap: 6,
+        fontSize: 12, color: T.accentDark, fontWeight: 600, fontFamily: T.fontSans,
+        marginBottom: 12,
+      }}>
+        <span>ℹ️ ¿Por qué preguntamos esto?</span>
+        <span style={{
+          fontSize: 10, transition: "transform 0.15s",
+          transform: showHelp ? "rotate(90deg)" : "rotate(0deg)", display: "inline-block",
+        }}>▶</span>
+      </button>
+
+      {showHelp && (
+        <div style={{
+          padding: "12px 14px", borderLeft: `3px solid ${T.accent}`,
+          background: T.accentLight, borderRadius: `0 ${T.radiusSm}px ${T.radiusSm}px 0`,
+          fontSize: 12.5, color: T.text, lineHeight: 1.65, marginBottom: 14, fontFamily: T.font,
+        }}>
+          {paso.help}
+          {paso.helpRef && (
+            <span style={{
+              display: "inline-block", marginLeft: 6, padding: "1px 8px", borderRadius: 4,
+              fontSize: 10.5, fontWeight: 700, background: "#fff", color: T.accentDark,
+              letterSpacing: "0.02em", fontFamily: T.fontSans,
+            }}>{paso.helpRef}</span>
+          )}
+        </div>
+      )}
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 8 }}>
         {paso.opciones.map((opt, i) => (
@@ -958,8 +1323,15 @@ function VerificadorAmbito() {
             border: `1.5px solid ${T.border}`, background: T.bg, cursor: "pointer",
             fontFamily: T.fontSans, color: T.text, textAlign: "left",
             transition: "all 0.18s",
+            display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12,
           }}>
-            {opt.label}
+            <span>{opt.label}</span>
+            {opt.ref && (
+              <span style={{
+                fontSize: 10.5, fontWeight: 700, color: T.accent, fontFamily: T.fontSans,
+                letterSpacing: "0.02em", whiteSpace: "nowrap", flexShrink: 0,
+              }}>{opt.ref}</span>
+            )}
           </button>
         ))}
       </div>
@@ -1146,13 +1518,29 @@ export default function NavegadorDS22() {
   const [metaCat, setMetaCat] = useState("comparativa");
   const [actorFilter, setActorFilter] = useState("todos");
   const [perfil, setPerfil] = useState(null);
-  const [miCasoTab, setMiCasoTab] = useState("verificador");
+  const [verifTab, setVerifTab] = useState("wizard");
   const [showAuspicio, setShowAuspicio] = useState(false);
+  const seenTipsRef = useRef(new Set());
+  const [activeTipPage, setActiveTipPage] = useState(null);
   const contentRef = useRef(null);
+
+
+  const triggerTipIfFirst = useCallback((p) => {
+    if (!TIPS[p]) return;
+    if (seenTipsRef.current.has(p)) return;
+    seenTipsRef.current.add(p);
+    setActiveTipPage(p);
+  }, []);
 
   const navigate = useCallback((p) => {
     setPage(p); setSearch(""); setMetaCat("comparativa"); setActorFilter("todos"); setPerfil(null);
-  }, []);
+    triggerTipIfFirst(p);
+  }, [triggerTipIfFirst]);
+
+  const finishOnboarding = useCallback(() => {
+    setShowOnboarding(false);
+    triggerTipIfFirst("inicio");
+  }, [triggerTipIfFirst]);
 
   useEffect(() => {
     if (contentRef.current) contentRef.current.scrollTo({ top: 0, behavior: "smooth" });
@@ -1169,7 +1557,7 @@ export default function NavegadorDS22() {
     const obs = new ResizeObserver(send);
     obs.observe(document.body);
     return () => obs.disconnect();
-  }, [page, showOnboarding, metaCat, actorFilter, perfil, miCasoTab]);
+  }, [page, showOnboarding, metaCat, actorFilter, perfil, verifTab]);
 
   const q = search.toLowerCase().trim();
 
@@ -1191,7 +1579,51 @@ export default function NavegadorDS22() {
   }, [q]);
 
   if (showOnboarding) {
-    return <Onboarding onStart={() => setShowOnboarding(false)} />;
+    return (
+      <>
+        <Onboarding
+          onStart={finishOnboarding}
+          onOpenAuspicio={() => { setShowOnboarding(false); setShowAuspicio(true); }}
+        />
+        {showAuspicio && (
+          <div onClick={() => setShowAuspicio(false)} style={{
+            position: "fixed", inset: 0, background: "rgba(15, 30, 24, 0.55)",
+            backdropFilter: "blur(2px)", zIndex: 100,
+            display: "flex", alignItems: "center", justifyContent: "center", padding: 16,
+          }}>
+            <div onClick={(e) => e.stopPropagation()} style={{
+              background: T.bg, borderRadius: 14, maxWidth: 540, width: "100%",
+              maxHeight: "90vh", overflowY: "auto",
+              boxShadow: "0 24px 60px rgba(0,0,0,0.25)", border: `1px solid ${T.border}`,
+            }}>
+              <div style={{
+                padding: "20px 24px 14px", borderBottom: `1px solid ${T.border}`,
+                display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12,
+              }}>
+                <div>
+                  <div style={{
+                    fontSize: 10.5, color: T.accent, fontWeight: 700, letterSpacing: "0.08em",
+                    textTransform: "uppercase", marginBottom: 4, fontFamily: T.fontSans,
+                  }}>Auspicio · País Circular</div>
+                  <h3 style={{
+                    fontSize: 19, fontWeight: 700, margin: 0, fontFamily: T.font,
+                    letterSpacing: "-0.015em", color: T.text, lineHeight: 1.25,
+                  }}>Auspiciar la portada del navegador</h3>
+                </div>
+                <button onClick={() => setShowAuspicio(false)} style={{
+                  border: "none", background: T.bgAlt, width: 32, height: 32, borderRadius: 8,
+                  cursor: "pointer", fontSize: 16, color: T.textSec, fontWeight: 700,
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                }}>✕</button>
+              </div>
+              <div style={{ padding: "18px 24px 24px" }}>
+                <FormularioNetlify mode="auspicio" />
+              </div>
+            </div>
+          </div>
+        )}
+      </>
+    );
   }
 
   // ─── RENDER ──────────────────────────────────────────────────
@@ -1202,7 +1634,7 @@ export default function NavegadorDS22() {
 
       {/* INLINE HOVER STYLES */}
       <style>{`
-        .pc-tab:hover { color: #2D6A4F !important; background: #F1F8F4 !important; }
+        .pc-tab:hover { color: #5F6368 !important; background: rgba(29,158,117,0.06) !important; }
         .pc-chip:hover { border-color: #2D6A4F !important; color: #1B4332 !important; background: #F1F8F4 !important; box-shadow: 0 1px 4px rgba(45,106,79,0.10); }
         .pc-chip-active:hover { filter: brightness(0.96); box-shadow: 0 2px 8px rgba(0,0,0,0.10); }
         .pc-btn:hover { border-color: #2D6A4F !important; box-shadow: 0 2px 8px rgba(45,106,79,0.12); transform: translateY(-1px); }
@@ -1343,22 +1775,30 @@ export default function NavegadorDS22() {
 
       {/* NAV TABS (sticky) */}
       <div style={{
-        display: "flex", borderBottom: `1px solid ${T.border}`, overflowX: "auto",
+        display: "flex", gap: 2, padding: "8px 8px 0",
+        borderBottom: `1px solid ${T.border}`, overflowX: "auto",
         background: T.bg, position: "sticky", top: 0, zIndex: 10,
         boxShadow: "0 1px 0 rgba(0,0,0,0.02)",
       }}>
-        {PAGES.map(p => (
-          <button key={p.id} onClick={() => navigate(p.id)} className={page === p.id ? undefined : "pc-tab"} style={{
-            padding: "13px 18px", fontSize: 12.5, fontWeight: 600, cursor: "pointer", border: "none",
-            background: "transparent", whiteSpace: "nowrap", fontFamily: T.fontSans, display: "flex",
-            alignItems: "center", gap: 5,
-            color: page === p.id ? T.accent : T.textSec,
-            borderBottom: page === p.id ? `2.5px solid ${T.accent}` : "2.5px solid transparent",
-            transition: "all 0.15s",
-          }}>
-            <span style={{ fontSize: 14 }}>{p.icon}</span> {p.label}
-          </button>
-        ))}
+        {PAGES.map(p => {
+          const active = page === p.id;
+          return (
+            <button key={p.id} onClick={() => navigate(p.id)} className={active ? undefined : "pc-tab"} style={{
+              padding: "10px 16px", fontSize: 12.5, cursor: "pointer", border: "none",
+              borderRadius: "8px 8px 0 0",
+              whiteSpace: "nowrap", fontFamily: T.fontSans, display: "flex",
+              alignItems: "center", gap: 6,
+              background: active ? "rgba(29,158,117,0.08)" : "rgba(0,0,0,0.03)",
+              color: active ? T.accent : T.textHint,
+              fontWeight: active ? 700 : 600,
+              borderBottom: active ? `2.5px solid ${T.accent}` : "2.5px solid transparent",
+              marginBottom: -1,
+              transition: "all 0.15s",
+            }}>
+              <span style={{ fontSize: 14 }}>{p.icon}</span> {p.label}
+            </button>
+          );
+        })}
       </div>
 
       {/* CONTENT */}
@@ -1373,17 +1813,32 @@ export default function NavegadorDS22() {
               en el marco de la Ley N° 20.920 de Responsabilidad Extendida del Productor.
             </p>
 
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(155px, 1fr))", gap: 10, marginBottom: 16 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 10, marginBottom: 16 }}>
               {[
-                { l: "Publicación DO", v: "7 mayo 2026", sub: "Vigencia inmediata (Títulos I, II, V, VI)" },
-                { l: "Metas exigibles", v: "Mayo 2028", sub: "24 meses desde publicación" },
-                { l: "Artículos", v: "49 + 6 trans.", sub: "6 títulos" },
-                { l: "Categorías AEE", v: "3", sub: "AIT · PFV · Otros" },
+                { icon: "📅", l: "Publicación DO", v: "7 mayo 2026", sub: "Vigencia inmediata Títulos I, II, V, VI" },
+                { icon: "🎯", l: "Metas exigibles", v: "Mayo 2028", sub: "24 meses desde publicación" },
+                { icon: "📄", l: "Artículos", v: "49 + 6 trans.", sub: "6 títulos" },
+                { icon: "🔌", l: "Categorías AEE", v: "3", sub: "AIT · PFV · Otros" },
+                { icon: "📦", l: "Productos prioritarios", v: "Pilas + AEE", sub: "4° y 5° de la Ley REP" },
               ].map((k, i) => (
-                <div key={i} style={{ background: T.bgAlt, borderRadius: T.radius, padding: "14px 16px" }}>
-                  <div style={{ fontSize: 11, color: T.textHint, marginBottom: 4 }}>{k.l}</div>
-                  <div style={{ fontSize: 20, fontWeight: 700, fontFamily: T.fontSans }}>{k.v}</div>
-                  <div style={{ fontSize: 11, color: T.textSec, marginTop: 3 }}>{k.sub}</div>
+                <div key={i} style={{
+                  background: T.bgAlt, borderRadius: T.radius, padding: "18px 18px 16px",
+                  position: "relative", overflow: "hidden",
+                }}>
+                  <div style={{
+                    position: "absolute", top: 12, right: 14, fontSize: 22, opacity: 0.55, lineHeight: 1,
+                  }}>{k.icon}</div>
+                  <div style={{
+                    fontSize: 10.5, color: T.textHint, fontWeight: 600, letterSpacing: "0.04em",
+                    textTransform: "uppercase", marginBottom: 6, fontFamily: T.fontSans, paddingRight: 28,
+                  }}>{k.l}</div>
+                  <div style={{
+                    fontSize: 18, fontWeight: 700, fontFamily: T.fontSans, lineHeight: 1.2,
+                    letterSpacing: "-0.01em", color: T.text, marginBottom: 4,
+                  }}>{k.v}</div>
+                  <div style={{ fontSize: 11.5, color: T.textSec, fontFamily: T.font, lineHeight: 1.4 }}>
+                    {k.sub}
+                  </div>
                 </div>
               ))}
             </div>
@@ -1437,13 +1892,58 @@ export default function NavegadorDS22() {
             </div>
 
             <div style={s.label}>Estructura del decreto</div>
-            <div style={{ fontSize: 13, color: T.textSec, lineHeight: 1.85, fontFamily: T.font }}>
-              <strong>Título I</strong> — Disposiciones generales: objeto, definiciones, ámbito, categorías, contabilización de pilas.<br />
-              <strong>Título II</strong> — Obligaciones de productores y sistemas de gestión: inscripción, planes, informes, garantías, tarifas.<br />
-              <strong>Título III</strong> — Metas: meta general (pilas + AEE), meta específica AIT, meta específica PFV, reglas comunes.<br />
-              <strong>Título IV</strong> — Obligaciones asociadas: comercializadores, GRANSIC, gestores, consumidores industriales, sustancias peligrosas.<br />
-              <strong>Título V</strong> — Otros actores: recicladores de base, municipalidades, permisos no precarios.<br />
-              <strong>Título VI</strong> — Otras disposiciones: consumidores, fiscalización (SMA), interpretación (MMA), vigencia.
+            <div style={{
+              display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8, marginBottom: 6,
+            }}>
+              {[
+                { n: "I",  nombre: "Disposiciones generales", desc: "Objeto, definiciones, ámbito, categorías", vig: true },
+                { n: "II", nombre: "Productores y SdG",       desc: "Inscripción, planes, garantías, tarifas", vig: true },
+                { n: "III",nombre: "Metas",                   desc: "General, AIT, PFV, reglas comunes", vig: false },
+                { n: "IV", nombre: "Obligaciones asociadas",  desc: "Comercializadores, GRANSIC, gestores, CI", vig: false },
+                { n: "V",  nombre: "Otros actores",           desc: "Recicladores de base, municipios", vig: true },
+                { n: "VI", nombre: "Otras disposiciones",     desc: "Consumidores, fiscalización, vigencia", vig: true },
+              ].map((t_, i) => (
+                <div key={i} style={{
+                  padding: "12px 12px", borderRadius: T.radiusSm,
+                  border: `1px solid ${t_.vig ? T.accent + "40" : T.border}`,
+                  background: t_.vig ? T.accentLight : T.bgAlt,
+                  position: "relative", overflow: "hidden",
+                }}>
+                  <div style={{
+                    display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6,
+                  }}>
+                    <span style={{
+                      fontSize: 11, fontWeight: 700, color: t_.vig ? T.accentDark : T.textHint,
+                      fontFamily: T.fontMono, letterSpacing: "0.04em",
+                    }}>TÍTULO {t_.n}</span>
+                    <span style={{
+                      width: 8, height: 8, borderRadius: "50%",
+                      background: t_.vig ? T.accent : T.textHint,
+                      boxShadow: t_.vig ? `0 0 0 3px ${T.accentLight}` : "none",
+                    }} />
+                  </div>
+                  <div style={{
+                    fontSize: 12.5, fontWeight: 700, color: T.text, lineHeight: 1.25,
+                    marginBottom: 4, fontFamily: T.fontSans,
+                  }}>{t_.nombre}</div>
+                  <div style={{
+                    fontSize: 10.5, color: T.textSec, lineHeight: 1.4, fontFamily: T.font,
+                  }}>{t_.desc}</div>
+                </div>
+              ))}
+            </div>
+            <div style={{
+              display: "flex", gap: 14, marginTop: 8, marginBottom: 6,
+              fontSize: 10.5, color: T.textHint, fontFamily: T.fontSans,
+            }}>
+              <span style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                <span style={{ width: 8, height: 8, borderRadius: "50%", background: T.accent }} />
+                Vigente
+              </span>
+              <span style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                <span style={{ width: 8, height: 8, borderRadius: "50%", background: T.textHint }} />
+                Exigible desde mayo 2028
+              </span>
             </div>
 
             <NoteBox>
@@ -1531,14 +2031,14 @@ export default function NavegadorDS22() {
           </div>
         )}
 
-        {/* ═══ MI CASO ═══ */}
-        {page === "micaso" && (
+        {/* ═══ VERIFICADOR (¿Estoy regulado?) ═══ */}
+        {page === "verificador" && (
           <div>
             <div style={{ marginBottom: 18 }}>
               <h2 style={{
-                fontSize: 21, fontWeight: 700, lineHeight: 1.25, margin: "0 0 6px",
+                fontSize: 22, fontWeight: 700, lineHeight: 1.22, margin: "0 0 6px",
                 fontFamily: T.font, letterSpacing: "-0.02em", color: T.text,
-              }}>¿Qué me toca a mí?</h2>
+              }}>¿Estoy regulado por el DS 22/2025?</h2>
               <p style={{ fontSize: 13.5, color: T.textSec, lineHeight: 1.6, margin: 0, fontFamily: T.font }}>
                 Diagnóstico rápido para productores: verifica si tu producto cae en el ámbito del decreto
                 y estima las toneladas que deberías valorizar cada año.
@@ -1550,24 +2050,28 @@ export default function NavegadorDS22() {
               background: T.bgAlt, borderRadius: T.radius, width: "fit-content",
             }}>
               {[
-                { id: "verificador", label: "Verificar ámbito", icon: "✅" },
-                { id: "calculadora", label: "Calcular meta", icon: "🧮" },
-              ].map(t => (
-                <button key={t.id} onClick={() => setMiCasoTab(t.id)} style={{
+                { id: "wizard", label: "Verificar ámbito", icon: "✅" },
+                { id: "calc",   label: "Calcular meta",   icon: "🧮" },
+              ].map(tb => (
+                <button key={tb.id} onClick={() => setVerifTab(tb.id)} style={{
                   padding: "8px 16px", fontSize: 13, fontWeight: 600, borderRadius: T.radiusSm,
                   border: "none", cursor: "pointer", fontFamily: T.fontSans,
-                  background: miCasoTab === t.id ? T.bg : "transparent",
-                  color: miCasoTab === t.id ? T.text : T.textSec,
-                  boxShadow: miCasoTab === t.id ? "0 1px 3px rgba(0,0,0,0.08)" : "none",
+                  background: verifTab === tb.id ? T.bg : "transparent",
+                  color: verifTab === tb.id ? T.text : T.textSec,
+                  boxShadow: verifTab === tb.id ? "0 1px 3px rgba(0,0,0,0.08)" : "none",
                   transition: "all 0.15s", display: "flex", alignItems: "center", gap: 6,
                 }}>
-                  <span>{t.icon}</span> {t.label}
+                  <span>{tb.icon}</span> {tb.label}
                 </button>
               ))}
             </div>
 
-            {miCasoTab === "verificador" && <VerificadorAmbito />}
-            {miCasoTab === "calculadora" && <Calculadora />}
+            {verifTab === "wizard" && <VerificadorAmbito onJumpToMetas={(perfilId) => {
+              setPage("metas");
+              setPerfil(perfilId);
+              setMetaCat(perfilId === "general" ? "comparativa" : perfilId);
+            }} />}
+            {verifTab === "calc" && <Calculadora />}
           </div>
         )}
 
@@ -2161,6 +2665,18 @@ export default function NavegadorDS22() {
           </div>
         </div>
       </div>
+
+      {/* HELP BUTTON FLOTANTE */}
+      <HelpButton onClick={() => setActiveTipPage(page)} />
+
+      {/* TIPSCREEN */}
+      {activeTipPage && TIPS[activeTipPage] && (
+        <TipBubble
+          key={activeTipPage}
+          tips={TIPS[activeTipPage]}
+          onClose={() => setActiveTipPage(null)}
+        />
+      )}
 
       {/* MODAL AUSPICIO */}
       {showAuspicio && (
