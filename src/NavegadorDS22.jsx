@@ -709,10 +709,10 @@ function Onboarding({ onStart, onOpenAuspicio }) {
           backgroundImage: "radial-gradient(circle at 1px 1px, #fff 1px, transparent 0)",
           backgroundSize: "22px 22px", pointerEvents: "none",
         }} />
-        <img src="https://www.paiscircular.cl/wp-content/uploads/2022/08/cropped-Logo-Pais-Letras-Negras-270x270.png"
+        <img src="/logo-pais-circular.png"
           alt="País Circular" style={{
-            height: 52, width: 52, objectFit: "contain", background: "#fff",
-            borderRadius: 12, padding: 6, marginBottom: 14,
+            height: 56, width: "auto", objectFit: "contain", background: "#fff",
+            borderRadius: 12, padding: "8px 14px", marginBottom: 14,
             boxShadow: "0 6px 20px rgba(0,0,0,0.18)",
           }} />
         <div style={{
@@ -1678,15 +1678,9 @@ export default function NavegadorDS22() {
           display: "flex", alignItems: "center", justifyContent: "space-between",
           gap: 16, marginBottom: 22, flexWrap: "wrap",
         }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-            <img src="https://www.paiscircular.cl/wp-content/uploads/2022/08/cropped-Logo-Pais-Letras-Negras-270x270.png"
-              alt="País Circular" style={{ height: 48, width: 48, objectFit: "contain" }} />
-            <div style={{
-              fontWeight: 800, fontSize: 18, color: "#1B4332", letterSpacing: "0.02em",
-              fontFamily: T.fontSans, lineHeight: 1,
-            }}>
-              PAÍS CIRCULAR<sup style={{ fontSize: 9, marginLeft: 1, top: -6 }}>®</sup>
-            </div>
+          <div style={{ display: "flex", alignItems: "center" }}>
+            <img src="/logo-pais-circular.png"
+              alt="País Circular" style={{ height: 40, width: "auto", objectFit: "contain" }} />
           </div>
           <a href="https://www.diariooficial.interior.gob.cl/publicaciones/2026/05/07/44443/01/2805526.pdf"
             target="_blank" rel="noopener noreferrer" className="pc-link"
@@ -2585,9 +2579,8 @@ export default function NavegadorDS22() {
           display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap",
         }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <img src="https://www.paiscircular.cl/wp-content/uploads/2022/08/cropped-Logo-Pais-Letras-Negras-270x270.png"
-              alt="País Circular" style={{ height: 20, width: 20, objectFit: "contain" }} />
-            <span>Elaborado por <strong style={{ color: T.text }}>País Circular</strong> · paiscircular.cl</span>
+            <img src="/logo-pais-circular.png"
+              alt="País Circular" style={{ height: 24, width: "auto", objectFit: "contain" }} />
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 10.5, color: T.textHint }}>
             <span style={{
