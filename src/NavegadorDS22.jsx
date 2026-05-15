@@ -234,20 +234,30 @@ const QUOTES = [
   { text: "Al año 2024 se habían introducido al mercado nacional más de un millón de toneladas de paneles fotovoltaicos, con un fuerte crecimiento sostenido en el período 2012–2024.", who: "Considerando 23°", src: "DS 22/2025, texto oficial", cat: "pfv" },
   { text: "Cerca del 90% de un panel fotovoltaico está compuesto por materiales reciclables, como vidrio y aluminio.", who: "Considerando 25°", src: "DS 22/2025, texto oficial", cat: "pfv" },
   { text: "Los beneficios económicos y sociales de la regulación propuesta equivalen a 0,64 veces sus costos.", who: "Considerando 47° (AGIES actualizado)", src: "DS 22/2025, texto oficial", cat: "general" },
+  { text: "La ministra Francisca Toledo anunció la publicación del decreto en el Punto Limpio del Parque O'Higgins, operado por TRAEE (CCS). Participaron del evento María José Ureta y Paz Maluenda, de la Oficina de Economía Circular del MMA.", who: "Cobertura del evento", src: "País Circular, 11 may 2026 — Fabiola Venegas Órdenes", cat: "plazos" },
+  { text: "TRAEE opera actualmente tres puntos limpios en la Región Metropolitana (Parque O'Higgins, La Florida y San Bernardo). El sistema evalúa expansión a regiones.", who: "Romina Reyes, gerenta TRAEE", src: "País Circular, 11 may 2026", cat: "actores" },
+  { text: "En el evento de anuncio, Midas Chile exhibió lingotes de cobre y aluminio obtenidos del reciclaje de chatarra electrónica, demostrando la cadena de valor que habilita el decreto.", who: "", src: "País Circular, 11 may 2026", cat: "actores" },
 ];
 
 // ─── COBERTURA EDITORIAL PAÍS CIRCULAR ──────────────────────────
 const COBERTURA_PC = [
-  { date: "9 jun 2025", title: "Decreto P+AEE entra en la recta final",
-    url: "https://www.paiscircular.cl/economia-circular/luego-de-4-anos-de-tramitacion-decreto-de-metas-para-pilas-y-aparatos-electricos-y-electronicos-entra-en-la-recta-final-para-ser-implementado/" },
-  { date: "15 jun 2025", title: "Expertos analizan ejes del decreto",
-    url: "https://www.paiscircular.cl/economia-circular/expertos-analizan-los-ejes-del-decreto-de-metas-para-pilas-y-aparatos-electricos-y-electronicos/" },
-  { date: "22 jul 2025", title: "Categorías y excepciones del decreto",
-    url: "https://www.paiscircular.cl/economia-circular/especialistas-explican-los-porque-de-las-categorias-y-excepciones-del-decreto-de-metas-para-residuos-de-aparatos-electricos-y-electronicos-pilas/" },
-  { date: "18 mar 2026", title: "Aplazamiento toma de razón",
-    url: "https://www.paiscircular.cl/economia-circular/cuanto-puede-afectar-al-avance-de-la-ley-rep-el-aplazamiento-de-la-toma-de-razon-del-decreto-de-metas-para-pilas-aparatos-electricos-y-electronicos/" },
+  { date: "11 may 2026",
+    title: "Nueva fase de la Ley REP busca revolucionar la gestión de residuos electrónicos en Chile",
+    author: "Fabiola Venegas Órdenes",
+    desc: "La ministra Francisca Toledo anunció la publicación del decreto en el Punto Limpio del Parque O'Higgins, operado por TRAEE (CCS). Midas Chile exhibió lingotes de cobre y aluminio obtenidos del reciclaje de chatarra electrónica.",
+    image: "https://www.paiscircular.cl/wp-content/uploads/2026/05/MG_0366-1.jpg",
+    url: "https://www.paiscircular.cl/economia-circular/es-efectivo-la-ministra-y-muchos-otros-lo-vieron-la-chatarra-electronica-se-puede-transformar-en-nuevas-materias-primas-para-no-contaminar/",
+    featured: true },
   { date: "23 abr 2026", title: "Contraloría tomó razón del decreto",
     url: "https://www.paiscircular.cl/economia-circular/contraloria-tomo-razon-del-decreto-de-metas-para-pilas-aparatos-electricos-y-electronicos-enviando-positiva-senal-a-los-regulados/" },
+  { date: "18 mar 2026", title: "Aplazamiento toma de razón",
+    url: "https://www.paiscircular.cl/economia-circular/cuanto-puede-afectar-al-avance-de-la-ley-rep-el-aplazamiento-de-la-toma-de-razon-del-decreto-de-metas-para-pilas-aparatos-electricos-y-electronicos/" },
+  { date: "22 jul 2025", title: "Categorías y excepciones del decreto",
+    url: "https://www.paiscircular.cl/economia-circular/especialistas-explican-los-porque-de-las-categorias-y-excepciones-del-decreto-de-metas-para-residuos-de-aparatos-electricos-y-electronicos-pilas/" },
+  { date: "15 jun 2025", title: "Expertos analizan ejes del decreto",
+    url: "https://www.paiscircular.cl/economia-circular/expertos-analizan-los-ejes-del-decreto-de-metas-para-pilas-y-aparatos-electricos-y-electronicos/" },
+  { date: "9 jun 2025", title: "Decreto P+AEE entra en la recta final",
+    url: "https://www.paiscircular.cl/economia-circular/luego-de-4-anos-de-tramitacion-decreto-de-metas-para-pilas-y-aparatos-electricos-y-electronicos-entra-en-la-recta-final-para-ser-implementado/" },
 ];
 
 const WEBINAR_PC = {
@@ -431,10 +441,18 @@ function Onboarding({ onStart }) {
         </button>
       </div>
       <div style={{
-        padding: "18px 24px", fontSize: 11, color: T.textHint, textAlign: "center",
-        borderTop: `1px solid ${T.border}`, lineHeight: 1.6, fontFamily: T.fontSans,
+        padding: "18px 24px", fontSize: 11.5, color: T.textHint, textAlign: "center",
+        borderTop: `1px solid ${T.border}`, lineHeight: 1.7, fontFamily: T.fontSans,
       }}>
-        Decreto Supremo N° 22/2025 · Ministerio del Medio Ambiente · Diario Oficial 7 mayo 2026
+        Decreto Supremo N° 22/2025 · Ministerio del Medio Ambiente<br />
+        <a href="https://www.diariooficial.interior.gob.cl/publicaciones/2026/05/07/44443/01/2805526.pdf"
+          target="_blank" rel="noopener noreferrer"
+          style={{
+            color: T.accentDark, textDecoration: "none", fontWeight: 600,
+            borderBottom: `1px solid ${T.accentLight}`, paddingBottom: 1,
+          }}>
+          Decreto publicado en el Diario Oficial el 7 de mayo de 2026 (PDF) ↗
+        </a>
       </div>
     </div>
   );
@@ -1093,15 +1111,18 @@ export default function NavegadorDS22() {
           <div style={{ textAlign: "right", fontSize: 11, color: T.textHint, lineHeight: 1.6 }}>
             <div><strong style={{ color: T.textSec, fontWeight: 600 }}>DO:</strong> 7 mayo 2026</div>
             <div><strong style={{ color: T.textSec, fontWeight: 600 }}>Metas:</strong> mayo 2028</div>
-            <a href="https://www.diariooficial.interior.gob.cl/edicionelectronica/index.php?date=07-05-2026&edition=44443"
+            <a href="https://www.diariooficial.interior.gob.cl/publicaciones/2026/05/07/44443/01/2805526.pdf"
               target="_blank" rel="noopener noreferrer" className="pc-link"
               style={{
                 display: "inline-block", marginTop: 6, fontSize: 11, fontWeight: 600,
                 color: T.accent, textDecoration: "none", borderBottom: `1px solid ${T.accentLight}`,
                 paddingBottom: 1, transition: "all 0.15s",
               }}>
-              Ver en Diario Oficial ↗
+              Ver decreto en Diario Oficial (PDF) ↗
             </a>
+            <div style={{ fontSize: 10, color: T.textHint, marginTop: 2, fontStyle: "italic" }}>
+              Edición 44.443 · CVE 2805526
+            </div>
           </div>
         </div>
 
@@ -1143,10 +1164,6 @@ export default function NavegadorDS22() {
           }}>Lectura interactiva</span>
         </div>
 
-        <p style={{ fontSize: 11, color: T.textHint, lineHeight: 1.55, margin: "14px 0 0", fontStyle: "italic" }}>
-          Nota: el Diario Oficial redirige a la edición vigente del día. Si el enlace no muestra la edición del 7 de mayo de 2026,
-          búsquela manualmente en «Ediciones Anteriores».
-        </p>
       </div>
 
       {/* NAV TABS (sticky) */}
@@ -1692,10 +1709,64 @@ export default function NavegadorDS22() {
                 </div>
               </div>
               <p style={s.p}>
-                Seguimiento editorial del DS 22/2025 publicado en paiscircular.cl, desde los borradores en consulta hasta la toma de razón.
+                Seguimiento editorial del DS 22/2025 publicado en paiscircular.cl, desde los borradores en consulta hasta la publicación oficial.
               </p>
+
+              {/* Nota destacada (featured) */}
+              {COBERTURA_PC.filter(c => c.featured).map((c, i) => (
+                <a key={`f-${i}`} href={c.url} target="_blank" rel="noopener noreferrer" className="pc-card-link" style={{
+                  display: "grid", gridTemplateColumns: "minmax(0, 1fr)", gap: 0,
+                  borderRadius: T.radius, border: `1px solid ${T.border}`, background: T.bg,
+                  textDecoration: "none", overflow: "hidden", marginBottom: 14,
+                  transition: "all 0.18s",
+                }}>
+                  {c.image && (
+                    <div style={{
+                      width: "100%", aspectRatio: "16 / 9", overflow: "hidden",
+                      background: T.bgMuted,
+                    }}>
+                      <img src={c.image} alt="" loading="lazy" style={{
+                        width: "100%", height: "100%", objectFit: "cover", display: "block",
+                      }} />
+                    </div>
+                  )}
+                  <div style={{ padding: "18px 22px" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8, flexWrap: "wrap" }}>
+                      <span style={{
+                        padding: "3px 9px", borderRadius: 4, fontSize: 10, fontWeight: 700,
+                        letterSpacing: "0.06em", textTransform: "uppercase",
+                        background: T.accentDark, color: "#fff", fontFamily: T.fontSans,
+                      }}>Última publicación</span>
+                      <span style={{
+                        fontSize: 10.5, color: T.textHint, fontWeight: 600, letterSpacing: "0.04em",
+                        textTransform: "uppercase", fontFamily: T.fontSans,
+                      }}>{c.date}</span>
+                    </div>
+                    <div style={{
+                      fontSize: 17, fontWeight: 700, color: T.text, lineHeight: 1.3,
+                      marginBottom: 8, fontFamily: T.font, letterSpacing: "-0.01em",
+                    }}>{c.title}</div>
+                    {c.author && (
+                      <div style={{
+                        fontSize: 11.5, color: T.textHint, marginBottom: 10, fontFamily: T.fontSans,
+                      }}>Por <strong style={{ color: T.textSec, fontWeight: 600 }}>{c.author}</strong></div>
+                    )}
+                    {c.desc && (
+                      <p style={{
+                        fontSize: 13, color: T.textSec, lineHeight: 1.6, margin: "0 0 12px",
+                        fontFamily: T.font,
+                      }}>{c.desc}</p>
+                    )}
+                    <div style={{ fontSize: 12, color: T.accent, fontWeight: 700, fontFamily: T.fontSans }}>
+                      Leer en País Circular →
+                    </div>
+                  </div>
+                </a>
+              ))}
+
+              {/* Resto de la cobertura */}
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 10 }}>
-                {COBERTURA_PC.map((c, i) => (
+                {COBERTURA_PC.filter(c => !c.featured).map((c, i) => (
                   <a key={i} href={c.url} target="_blank" rel="noopener noreferrer" className="pc-card-link" style={{
                     display: "block", padding: "14px 16px", borderRadius: T.radius,
                     border: `1px solid ${T.border}`, background: T.bg, textDecoration: "none",
