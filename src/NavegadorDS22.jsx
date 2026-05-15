@@ -236,9 +236,38 @@ const PERFILES_PRODUCTOR = [
     note: "Cumple la meta general del art. 21 (3% → 45% en 10 años). Sin meta específica adicional." },
 ];
 
+// ─── GLOSARIO ────────────────────────────────────────────────────
+const GLOSARIO = {
+  "AEE":      { def: "Aparatos eléctricos y electrónicos. Aparatos que necesitan corriente eléctrica o campos electromagnéticos para funcionar.", ref: "Art. 2° N°2" },
+  "AIT":      { def: "Aparatos de intercambio de temperatura. Enfrían/calientan/deshumidifican mediante refrigerantes o aceites (refrigeradores, A/C, radiadores).", ref: "Art. 2° N°1" },
+  "PFV":      { def: "Paneles fotovoltaicos. AEE que generan electricidad a partir de luz solar. Superficie ≥ 0,25 m².", ref: "Art. 2° N°12" },
+  "REP":      { def: "Responsabilidad Extendida del Productor. Régimen establecido por la Ley 20.920 que obliga a los productores a hacerse cargo de los residuos de sus productos.", ref: "Ley 20.920" },
+  "MMA":      { def: "Ministerio del Medio Ambiente. Autoridad que dicta el decreto y publica las herramientas de interpretación.", ref: "Art. 47°" },
+  "SMA":      { def: "Superintendencia del Medio Ambiente. Autoridad encargada de fiscalizar el cumplimiento.", ref: "Art. 48°" },
+  "RETC":     { def: "Registro de Emisiones y Transferencias de Contaminantes. Ventanilla Única donde se inscriben productores, gestores y sistemas de gestión.", ref: "Art. 8°, 36°" },
+  "GRANSIC":  { def: "Sistema colectivo de gestión integrado por 20 o más productores no relacionados entre sí.", ref: "Art. 2° N°7" },
+  "TIM":      { def: "Toneladas Introducidas al Mercado. En las fórmulas, se usa el promedio de los 3 años anteriores al año de cumplimiento.", ref: "Art. 22, 24" },
+  "RG":       { def: "Residuos valorizados por el Sistema de Gestión en el año de cálculo.", ref: "Art. 22, 24" },
+  "RCI":      { def: "Residuos valorizados por Consumidores Industriales en el año de cálculo, imputables al sistema de gestión.", ref: "Art. 20°, 22°" },
+  "Weibull":  { def: "Distribución estadística usada para estimar la masa de residuos PFV a partir del histórico de productos introducidos al mercado. Parámetros: α=3,5; β=25,0.", ref: "Art. 26" },
+  "AGIES":    { def: "Análisis General de Impacto Económico y Social. Evaluación obligatoria de costos y beneficios de la regulación.", ref: "Considerandos" },
+  "NCh 3241": { def: "Norma chilena para gestión segura de aparatos refrigerantes y de intercambio de temperatura (2017).", ref: "Art. 37° N°1" },
+  "NCh 3301": { def: "Norma chilena complementaria sobre manejo de residuos AIT y recuperación de refrigerantes (2017).", ref: "Art. 37° N°1" },
+  "PoM":      { def: "Put on Market — productos introducidos al mercado en un año. Base para el cálculo Weibull en PFV.", ref: "Art. 26" },
+  "AGIES B/C":{ def: "Razón Beneficio/Costo del AGIES. Un valor < 1 implica VAN negativo en la estimación oficial.", ref: "Considerando 47°" },
+  "Ley 20.416": { def: "Ley que fija normas especiales para empresas de menor tamaño. Define microempresa (ventas anuales hasta 2.400 UF), pequeña empresa, mediana empresa.", ref: "Art. 6° inc. 2°" },
+  "Microempresa": { def: "Según Ley 20.416: empresa con ventas anuales hasta 2.400 UF. Exenta de metas y obligaciones asociadas, pero debe informar al MMA.", ref: "Art. 9°" },
+};
+
+// ─── PARÁMETROS WEIBULL PARA CALCULADORA PFV ────────────────────
+// VP(t,n) = (α/β^α) × (n-t)^(α-1) × e^(-((n-t)/β)^α). Art. 26.
+const WEIBULL_ALPHA = 3.5;
+const WEIBULL_BETA = 25.0;
+
 // ─── SECTIONS ────────────────────────────────────────────────────
 const PAGES = [
   { id: "inicio",      label: "Resumen",       icon: "📋" },
+  { id: "micaso",      label: "Mi caso",       icon: "🧭" },
   { id: "metas",       label: "Metas",         icon: "📊" },
   { id: "actores",     label: "Obligaciones",  icon: "👤" },
   { id: "plazos",      label: "Plazos",        icon: "📅" },
@@ -364,6 +393,86 @@ function Onboarding({ onStart }) {
   );
 }
 
+// Escanea un string y envuelve automáticamente términos del glosario con <Term>.
+// Orden por longitud descendente para que "AGIES B/C" gane sobre "AGIES".
+const _GLOSS_PATTERN = new RegExp(
+  "(" +
+  Object.keys(GLOSARIO)
+    .sort((a, b) => b.length - a.length)
+    .map(k => k.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
+    .join("|") +
+  ")",
+  "g"
+);
+function withGlossary(text) {
+  if (!text) return text;
+  const parts = String(text).split(_GLOSS_PATTERN);
+  return parts.map((tok, i) =>
+    GLOSARIO[tok] ? <Term key={i} t={tok} /> : <span key={i}>{tok}</span>
+  );
+}
+
+function Term({ t, children }) {
+  const [show, setShow] = useState(false);
+  const def = GLOSARIO[t];
+  if (!def) return <>{children || t}</>;
+  return (
+    <span
+      tabIndex={0}
+      onMouseEnter={() => setShow(true)}
+      onMouseLeave={() => setShow(false)}
+      onFocus={() => setShow(true)}
+      onBlur={() => setShow(false)}
+      style={{
+        position: "relative",
+        borderBottom: `1.5px dotted ${T.accent}`,
+        cursor: "help",
+        fontWeight: 600,
+        color: "inherit",
+        outline: "none",
+      }}
+    >
+      {children || t}
+      {show && (
+        <span
+          role="tooltip"
+          style={{
+            position: "absolute",
+            bottom: "calc(100% + 6px)",
+            left: "50%",
+            transform: "translateX(-50%)",
+            zIndex: 50,
+            width: 260,
+            background: "#1A1D21",
+            color: "#fff",
+            padding: "10px 12px",
+            borderRadius: 8,
+            fontSize: 12,
+            lineHeight: 1.5,
+            fontFamily: T.fontSans,
+            fontWeight: 400,
+            fontStyle: "normal",
+            boxShadow: "0 8px 24px rgba(0,0,0,0.20)",
+            pointerEvents: "none",
+            whiteSpace: "normal",
+            textAlign: "left",
+          }}
+        >
+          <span style={{
+            display: "block", fontSize: 11, fontWeight: 700, color: T.accentLight,
+            letterSpacing: "0.04em", marginBottom: 4, textTransform: "uppercase",
+          }}>{t}</span>
+          {def.def}
+          <span style={{
+            display: "block", marginTop: 6, fontSize: 10.5, color: "#9CCDB9",
+            fontWeight: 600, letterSpacing: "0.02em",
+          }}>{def.ref}</span>
+        </span>
+      )}
+    </span>
+  );
+}
+
 function QuoteCard({ q }) {
   return (
     <div style={{ borderLeft: `2px solid ${T.accent}`, padding: "10px 16px", marginBottom: 12,
@@ -378,6 +487,414 @@ function QuoteCard({ q }) {
   );
 }
 
+// ─── VERIFICADOR DE ÁMBITO ──────────────────────────────────────
+
+const VERIFICADOR_PASOS = [
+  {
+    id: "energia",
+    q: "¿Tu producto necesita corriente eléctrica o campos electromagnéticos para funcionar?",
+    help: "Esta es la prueba básica para que un aparato sea considerado AEE (art. 2° N°2). Las pilas siempre cumplen esta condición.",
+    opciones: [
+      { label: "Sí — depende de electricidad", value: "si" },
+      { label: "No — funcionamiento mecánico/manual", value: "no", veredicto: "fuera",
+        razon: "Si el producto no requiere corriente eléctrica ni campos electromagnéticos, no es AEE y queda fuera del ámbito del DS 22/2025." },
+    ],
+  },
+  {
+    id: "exclusion",
+    q: "¿Tu producto cae en alguna de estas exclusiones del art. 3°?",
+    help: "Si marcas alguna, el producto queda fuera del ámbito (salvo que la regla particular indique otra cosa).",
+    multi: true,
+    opciones: [
+      { label: "Es material militar, armas o municiones", value: "militar", veredicto: "fuera" },
+      { label: "Es herramienta industrial fija de gran envergadura (>2 ton o >15 m³)", value: "industrial", veredicto: "fuera" },
+      { label: "Forma parte de una instalación fija de gran envergadura (4 requisitos copulativos)", value: "instalacion", veredicto: "fuera" },
+      { label: "Es un medio de transporte con permiso de circulación", value: "transporte", veredicto: "fuera" },
+      { label: "Es maquinaria móvil fuera de ruta de uso exclusivamente profesional", value: "fueraruta", veredicto: "fuera" },
+      { label: "Es exclusivamente para investigación y desarrollo (uso profesional)", value: "id", veredicto: "fuera" },
+      { label: "Está instalado como componente de un aparato ya excluido", value: "componente", veredicto: "fuera" },
+      { label: "Es una pila de composición plomo-ácido", value: "plomo", veredicto: "fuera",
+        razon: "Las pilas de plomo-ácido están expresamente excluidas (art. 2° N°13)." },
+      { label: "Ninguna de las anteriores", value: "ninguna" },
+    ],
+  },
+  {
+    id: "micro",
+    q: "¿Tu empresa califica como microempresa según la Ley 20.416?",
+    help: "Microempresa = ventas anuales hasta 2.400 UF. Las microempresas están exentas de metas y obligaciones asociadas, pero deben informar al MMA (art. 9°).",
+    opciones: [
+      { label: "Sí, somos microempresa", value: "si", veredicto: "exenta",
+        razon: "Estás exenta de metas y obligaciones asociadas, pero conservas la obligación de informar al MMA (art. 9°)." },
+      { label: "No, somos pequeña, mediana o gran empresa", value: "no" },
+    ],
+  },
+  {
+    id: "tipo",
+    q: "¿Qué tipo de producto introduces al mercado?",
+    help: "El tipo determina qué metas específicas se suman a la meta general.",
+    opciones: [
+      { label: "Pilas (no plomo-ácido)", value: "pilas",   veredicto: "dentro_pilas" },
+      { label: "Aparatos de intercambio de temperatura (refrigeradores, A/C)", value: "ait", veredicto: "dentro_ait" },
+      { label: "Paneles fotovoltaicos (PFV)", value: "pfv", veredicto: "dentro_pfv" },
+      { label: "Otros AEE (celulares, computadores, electrodomésticos, etc.)", value: "general", veredicto: "dentro_general" },
+    ],
+  },
+];
+
+const VEREDICTOS = {
+  fuera:           { color: T.textHint, bg: T.bgMuted, icon: "✕", title: "Fuera del ámbito del DS 22/2025" },
+  exenta:          { color: T.amber,    bg: T.amberLight, icon: "!", title: "Dentro del ámbito · Exenta de metas" },
+  dentro_pilas:    { color: "#E74C3C",  bg: "#FDECEA", icon: "✓", title: "Productor de Pilas · Cumple meta general" },
+  dentro_ait:      { color: T.amber,    bg: T.amberLight, icon: "✓", title: "Productor de AIT · Meta general + AIT" },
+  dentro_pfv:      { color: T.purple,   bg: "#F3F0FF", icon: "✓", title: "Productor de PFV · Solo meta PFV" },
+  dentro_general:  { color: T.accent,   bg: T.accentLight, icon: "✓", title: "Productor general AEE · Cumple meta general" },
+};
+
+function VerificadorAmbito() {
+  const [respuestas, setRespuestas] = useState({});
+  const [idx, setIdx] = useState(0);
+  const [veredicto, setVeredicto] = useState(null);
+
+  const reset = () => { setRespuestas({}); setIdx(0); setVeredicto(null); };
+
+  const responder = (opt, paso) => {
+    if (paso.multi) {
+      // Para multi-selección con "ninguna" como única opción de avance.
+      if (opt.value === "ninguna") {
+        setRespuestas(r => ({ ...r, [paso.id]: ["ninguna"] }));
+        if (idx + 1 < VERIFICADOR_PASOS.length) setIdx(idx + 1);
+      } else if (opt.veredicto) {
+        setRespuestas(r => ({ ...r, [paso.id]: [opt.value] }));
+        setVeredicto({ v: opt.veredicto, razon: opt.razon, opt });
+      }
+      return;
+    }
+    setRespuestas(r => ({ ...r, [paso.id]: opt.value }));
+    if (opt.veredicto) {
+      setVeredicto({ v: opt.veredicto, razon: opt.razon, opt });
+    } else if (idx + 1 < VERIFICADOR_PASOS.length) {
+      setIdx(idx + 1);
+    }
+  };
+
+  if (veredicto) {
+    const cfg = VEREDICTOS[veredicto.v];
+    const perfilMap = {
+      dentro_pilas: "pilas", dentro_ait: "ait", dentro_pfv: "pfv", dentro_general: "general",
+    };
+    const perfilId = perfilMap[veredicto.v];
+    const perfilData = perfilId && PERFILES_PRODUCTOR.find(p => p.id === perfilId);
+
+    return (
+      <div>
+        <div style={{
+          background: cfg.bg, border: `1px solid ${cfg.color}33`, borderLeft: `4px solid ${cfg.color}`,
+          borderRadius: T.radius, padding: "18px 22px", marginBottom: 18,
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 10 }}>
+            <span style={{
+              width: 36, height: 36, borderRadius: "50%", background: cfg.color, color: "#fff",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontWeight: 700, fontSize: 18,
+            }}>{cfg.icon}</span>
+            <div style={{ fontSize: 16, fontWeight: 700, color: T.text, fontFamily: T.fontSans }}>
+              {cfg.title}
+            </div>
+          </div>
+          {veredicto.razon && (
+            <p style={{ fontSize: 13.5, color: T.textSec, lineHeight: 1.65, margin: "0 0 12px", fontFamily: T.font }}>
+              {veredicto.razon}
+            </p>
+          )}
+          {perfilData && (
+            <div style={{ marginTop: 12 }}>
+              <div style={{ fontSize: 11, color: T.textHint, fontWeight: 600, letterSpacing: "0.04em",
+                textTransform: "uppercase", marginBottom: 8 }}>
+                Metas aplicables <span style={s.artRef}>{perfilData.ref}</span>
+              </div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10 }}>
+                {perfilData.metas.map(mid => {
+                  const c = CATS.find(x => x.id === mid) || { label: "Meta general", color: T.accent };
+                  return (
+                    <span key={mid} style={{
+                      display: "inline-flex", alignItems: "center", gap: 5,
+                      padding: "5px 12px", borderRadius: 16, fontSize: 12, fontWeight: 700,
+                      background: c.color, color: "#fff", fontFamily: T.fontSans,
+                    }}>✓ {c.label}</span>
+                  );
+                })}
+                {!perfilData.metas.includes("general") && (
+                  <span style={{
+                    display: "inline-flex", alignItems: "center", gap: 5,
+                    padding: "5px 12px", borderRadius: 16, fontSize: 12, fontWeight: 600,
+                    background: T.bgMuted, color: T.textHint, fontFamily: T.fontSans,
+                    textDecoration: "line-through",
+                  }}>Meta general</span>
+                )}
+              </div>
+              <div style={{ fontSize: 13, color: T.textSec, lineHeight: 1.6, fontFamily: T.font }}>
+                {perfilData.note}
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div style={{
+          background: T.bgAlt, border: `1px solid ${T.border}`, borderRadius: T.radius,
+          padding: "14px 16px", marginBottom: 14,
+        }}>
+          <div style={s.label}>Próximos pasos sugeridos</div>
+          {veredicto.v === "fuera" ? (
+            <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13, color: T.textSec, lineHeight: 1.75, fontFamily: T.font }}>
+              <li>Revisa la sección «Exclusiones» para confirmar la causal exacta.</li>
+              <li>Si tu modelo de negocio cambia o introduces otras líneas, vuelve a correr el verificador.</li>
+            </ul>
+          ) : veredicto.v === "exenta" ? (
+            <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13, color: T.textSec, lineHeight: 1.75, fontFamily: T.font }}>
+              <li>Inscríbete en la <Term t="RETC" /> de todas formas: la obligación de informar se mantiene (art. 9°).</li>
+              <li>Si tu empresa supera el umbral de microempresa en el futuro, te aplicarán todas las metas.</li>
+            </ul>
+          ) : (
+            <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13, color: T.textSec, lineHeight: 1.75, fontFamily: T.font }}>
+              <li>Inscríbete en la <Term t="RETC" /> dentro de 4 meses desde tu primera introducción al mercado (art. 8°).</li>
+              <li>Convene o constituye un sistema de gestión: individual o colectivo (<Term t="GRANSIC" />).</li>
+              <li>Presenta tu plan de gestión antes de agosto 2027 (15 meses desde DO, art. 5° transitorio).</li>
+              <li>Usa la pestaña «Calcular meta» para estimar tus toneladas a valorizar.</li>
+            </ul>
+          )}
+        </div>
+
+        <button onClick={reset} className="pc-btn" style={{
+          padding: "9px 18px", fontSize: 12.5, fontWeight: 600, borderRadius: T.radius,
+          border: `1.5px solid ${T.border}`, background: T.bg, cursor: "pointer",
+          fontFamily: T.fontSans, color: T.text, transition: "all 0.18s",
+        }}>↺ Volver a empezar</button>
+      </div>
+    );
+  }
+
+  const paso = VERIFICADOR_PASOS[idx];
+  const total = VERIFICADOR_PASOS.length;
+
+  return (
+    <div>
+      <div style={{ marginBottom: 16 }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
+          <span style={{
+            fontSize: 11, color: T.textHint, fontWeight: 600, letterSpacing: "0.04em",
+            textTransform: "uppercase", fontFamily: T.fontSans,
+          }}>Paso {idx + 1} de {total}</span>
+          {idx > 0 && (
+            <button onClick={() => setIdx(idx - 1)} className="pc-link" style={{
+              background: "transparent", border: "none", cursor: "pointer",
+              fontSize: 11, color: T.accent, fontWeight: 600, fontFamily: T.fontSans,
+            }}>← Volver</button>
+          )}
+        </div>
+        <div style={{ display: "flex", gap: 4 }}>
+          {VERIFICADOR_PASOS.map((_, i) => (
+            <div key={i} style={{
+              flex: 1, height: 3, borderRadius: 2,
+              background: i <= idx ? T.accent : T.bgMuted, transition: "background 0.2s",
+            }} />
+          ))}
+        </div>
+      </div>
+
+      <h3 style={{
+        fontSize: 17, fontWeight: 700, lineHeight: 1.35, margin: "0 0 8px",
+        fontFamily: T.font, color: T.text,
+      }}>{paso.q}</h3>
+      <p style={{ fontSize: 12.5, color: T.textSec, lineHeight: 1.6, margin: "0 0 16px", fontFamily: T.font }}>
+        {paso.help}
+      </p>
+
+      <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 8 }}>
+        {paso.opciones.map((opt, i) => (
+          <button key={i} onClick={() => responder(opt, paso)} className="pc-btn" style={{
+            padding: "12px 16px", fontSize: 13.5, fontWeight: 600, borderRadius: T.radius,
+            border: `1.5px solid ${T.border}`, background: T.bg, cursor: "pointer",
+            fontFamily: T.fontSans, color: T.text, textAlign: "left",
+            transition: "all 0.18s",
+          }}>
+            {opt.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── CALCULADORA DE CUMPLIMIENTO ────────────────────────────────
+
+function Calculadora() {
+  const [perfilCalc, setPerfilCalc] = useState("general");
+  const [tim, setTim] = useState({ a1: "", a2: "", a3: "" });
+  const [yearOffset, setYearOffset] = useState(1); // Año 1 = primer año desde vigencia (mayo 2028+).
+
+  const timPromedio = useMemo(() => {
+    const vals = [tim.a1, tim.a2, tim.a3].map(v => parseFloat(v));
+    if (vals.some(v => isNaN(v) || v < 0)) return null;
+    return (vals[0] + vals[1] + vals[2]) / 3;
+  }, [tim]);
+
+  const metasAplicables = useMemo(() => {
+    const map = {
+      pilas: ["general"], ait: ["general", "ait"], pfv: ["pfv"], general: ["general"],
+    };
+    return map[perfilCalc] || [];
+  }, [perfilCalc]);
+
+  const resultados = useMemo(() => {
+    if (timPromedio == null) return null;
+    return metasAplicables.map(mid => {
+      const m = METAS[mid];
+      const row = m.rows.find(r => r[0] === yearOffset) ||
+                  m.rows[m.rows.length - 1]; // saturación al último año (capped).
+      const pct = row[2];
+      const ton = pct != null ? (timPromedio * pct / 100) : null;
+      const cat = CATS.find(c => c.id === mid);
+      return { mid, label: m === METAS.general ? "Meta general" : cat.label, pct, ton, color: cat.color, art: m.art };
+    });
+  }, [metasAplicables, yearOffset, timPromedio]);
+
+  const fmt = (n) => n == null ? "—" : n.toLocaleString("es-CL", { maximumFractionDigits: 1 });
+  const inputStyle = {
+    width: "100%", padding: "10px 12px", fontSize: 13.5, border: `1.5px solid ${T.border}`,
+    borderRadius: T.radius, outline: "none", background: T.bg, fontFamily: T.fontMono,
+    color: T.text, transition: "border 0.18s",
+  };
+
+  return (
+    <div>
+      <p style={s.p}>
+        Estima cuántas toneladas tu sistema de gestión debería valorizar en un año dado, según
+        las <Term t="TIM" /> de los 3 años previos y la meta aplicable a tu perfil.
+        <span style={s.artRef}>Arts. 21–25</span>
+      </p>
+
+      <div style={{ marginBottom: 18 }}>
+        <div style={s.label}>1. Perfil del productor</div>
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+          {PERFILES_PRODUCTOR.map(p => (
+            <Chip key={p.id} active={perfilCalc === p.id} onClick={() => setPerfilCalc(p.id)}>
+              {p.label}
+            </Chip>
+          ))}
+        </div>
+      </div>
+
+      <div style={{ marginBottom: 18 }}>
+        <div style={s.label}>2. Toneladas introducidas al mercado · últimos 3 años</div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }}>
+          {[
+            { k: "a3", l: "Hace 3 años" },
+            { k: "a2", l: "Hace 2 años" },
+            { k: "a1", l: "Año anterior" },
+          ].map(c => (
+            <div key={c.k}>
+              <label style={{ display: "block", fontSize: 11, color: T.textHint, marginBottom: 4, fontFamily: T.fontSans }}>
+                {c.l}
+              </label>
+              <input
+                type="number" min="0" step="0.1"
+                placeholder="0"
+                value={tim[c.k]}
+                onChange={e => setTim({ ...tim, [c.k]: e.target.value })}
+                style={inputStyle}
+                onFocus={e => e.target.style.borderColor = T.accent}
+                onBlur={e => e.target.style.borderColor = T.border}
+              />
+            </div>
+          ))}
+        </div>
+        {timPromedio != null && (
+          <div style={{ marginTop: 8, fontSize: 12, color: T.textSec, fontFamily: T.fontMono }}>
+            TIM<sub>prom</sub> = {fmt(timPromedio)} t/año
+          </div>
+        )}
+      </div>
+
+      <div style={{ marginBottom: 18 }}>
+        <div style={s.label}>3. Año de cumplimiento (1 = primer año desde mayo 2028)</div>
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+          {[1,2,3,4,5,6,7,8,9,10].map(yr => (
+            <button key={yr} onClick={() => setYearOffset(yr)} className={yearOffset === yr ? "pc-chip-active" : "pc-chip"} style={{
+              padding: "7px 12px", fontSize: 12, fontWeight: 600, borderRadius: 20, cursor: "pointer",
+              border: yearOffset === yr ? "1px solid transparent" : `1.5px solid ${T.border}`,
+              background: yearOffset === yr ? T.accent : T.bg,
+              color: yearOffset === yr ? "#fff" : T.textSec, transition: "all 0.18s",
+              fontFamily: T.fontSans, minWidth: 36,
+            }}>{yr}°{yr === 10 ? "+" : ""}</button>
+          ))}
+        </div>
+        <div style={{ fontSize: 11, color: T.textHint, marginTop: 6, fontFamily: T.fontSans }}>
+          Año seleccionado: {2027 + yearOffset}{yearOffset === 10 ? " en adelante" : ""}
+        </div>
+      </div>
+
+      {resultados && (
+        <div style={{
+          background: "linear-gradient(135deg, #F1F8F4 0%, #E8F7F1 100%)",
+          border: `1px solid ${T.accent}33`, borderRadius: T.radius,
+          padding: "18px 20px",
+        }}>
+          <div style={{ fontSize: 11, color: T.accent, fontWeight: 700, letterSpacing: "0.06em",
+            textTransform: "uppercase", marginBottom: 12 }}>
+            Resultado
+          </div>
+          {resultados.map((r, i) => (
+            <div key={i} style={{
+              display: "grid", gridTemplateColumns: "auto 1fr auto", gap: 14, alignItems: "center",
+              padding: "10px 0", borderBottom: i < resultados.length - 1 ? `1px solid ${T.border}` : "none",
+            }}>
+              <div style={{
+                width: 8, height: 36, borderRadius: 2, background: r.color,
+              }} />
+              <div>
+                <div style={{ fontSize: 13.5, fontWeight: 700, color: T.text, fontFamily: T.fontSans }}>
+                  {r.label}
+                </div>
+                <div style={{ fontSize: 11, color: T.textHint, marginTop: 2, fontFamily: T.fontSans }}>
+                  Meta {r.pct != null ? r.pct + "%" : "sin meta este año"} · {r.art}
+                </div>
+              </div>
+              <div style={{ textAlign: "right", fontFamily: T.fontMono }}>
+                <div style={{ fontSize: 22, fontWeight: 800, color: r.color, lineHeight: 1, letterSpacing: "-0.02em" }}>
+                  {r.ton != null ? fmt(r.ton) : "—"}
+                </div>
+                <div style={{ fontSize: 10.5, color: T.textHint, marginTop: 3, letterSpacing: "0.04em" }}>
+                  t/año a valorizar
+                </div>
+              </div>
+            </div>
+          ))}
+          {perfilCalc === "pfv" && (
+            <div style={{
+              marginTop: 12, padding: "10px 12px", background: "#F3F0FF",
+              borderRadius: T.radiusSm, fontSize: 12, color: T.textSec, lineHeight: 1.6, fontFamily: T.font,
+            }}>
+              <strong style={{ color: T.purple }}>Nota PFV:</strong> Esta es una estimación
+              simplificada. La fórmula real (art. 26) usa la distribución de <Term t="Weibull" />
+              {" "}sobre el histórico completo de <Term t="PoM" />, no el promedio simple de 3 años.
+              El MMA publicará la herramienta oficial dentro de 6 meses desde la publicación.
+            </div>
+          )}
+        </div>
+      )}
+
+      {!resultados && (
+        <div style={{
+          padding: "16px 18px", background: T.bgAlt, borderRadius: T.radius,
+          fontSize: 13, color: T.textHint, textAlign: "center", fontFamily: T.font,
+        }}>
+          Ingresa las toneladas de los 3 años anteriores para ver el resultado.
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── MAIN COMPONENT ──────────────────────────────────────────────
 
 export default function NavegadorDS22() {
@@ -387,6 +904,7 @@ export default function NavegadorDS22() {
   const [metaCat, setMetaCat] = useState("comparativa");
   const [actorFilter, setActorFilter] = useState("todos");
   const [perfil, setPerfil] = useState(null);
+  const [miCasoTab, setMiCasoTab] = useState("verificador");
   const contentRef = useRef(null);
 
   const navigate = useCallback((p) => {
@@ -408,7 +926,7 @@ export default function NavegadorDS22() {
     const obs = new ResizeObserver(send);
     obs.observe(document.body);
     return () => obs.disconnect();
-  }, [page, showOnboarding, metaCat, actorFilter, perfil]);
+  }, [page, showOnboarding, metaCat, actorFilter, perfil, miCasoTab]);
 
   if (showOnboarding) {
     return <Onboarding onStart={() => setShowOnboarding(false)} />;
@@ -635,7 +1153,7 @@ export default function NavegadorDS22() {
                     <span style={s.artRef}>{d.ref}</span>
                   </div>
                   <div style={{ fontSize: 12.5, color: T.textSec, lineHeight: 1.6, fontFamily: T.font }}>
-                    {d.text}
+                    {withGlossary(d.text)}
                   </div>
                 </div>
               ))}
@@ -667,6 +1185,46 @@ export default function NavegadorDS22() {
                 </button>
               ))}
             </div>
+          </div>
+        )}
+
+        {/* ═══ MI CASO ═══ */}
+        {page === "micaso" && (
+          <div>
+            <div style={{ marginBottom: 18 }}>
+              <h2 style={{
+                fontSize: 21, fontWeight: 700, lineHeight: 1.25, margin: "0 0 6px",
+                fontFamily: T.font, letterSpacing: "-0.02em", color: T.text,
+              }}>¿Qué me toca a mí?</h2>
+              <p style={{ fontSize: 13.5, color: T.textSec, lineHeight: 1.6, margin: 0, fontFamily: T.font }}>
+                Diagnóstico rápido para productores: verifica si tu producto cae en el ámbito del decreto
+                y estima las toneladas que deberías valorizar cada año.
+              </p>
+            </div>
+
+            <div style={{
+              display: "flex", gap: 4, marginBottom: 20, padding: 4,
+              background: T.bgAlt, borderRadius: T.radius, width: "fit-content",
+            }}>
+              {[
+                { id: "verificador", label: "Verificar ámbito", icon: "✅" },
+                { id: "calculadora", label: "Calcular meta", icon: "🧮" },
+              ].map(t => (
+                <button key={t.id} onClick={() => setMiCasoTab(t.id)} style={{
+                  padding: "8px 16px", fontSize: 13, fontWeight: 600, borderRadius: T.radiusSm,
+                  border: "none", cursor: "pointer", fontFamily: T.fontSans,
+                  background: miCasoTab === t.id ? T.bg : "transparent",
+                  color: miCasoTab === t.id ? T.text : T.textSec,
+                  boxShadow: miCasoTab === t.id ? "0 1px 3px rgba(0,0,0,0.08)" : "none",
+                  transition: "all 0.15s", display: "flex", alignItems: "center", gap: 6,
+                }}>
+                  <span>{t.icon}</span> {t.label}
+                </button>
+              ))}
+            </div>
+
+            {miCasoTab === "verificador" && <VerificadorAmbito />}
+            {miCasoTab === "calculadora" && <Calculadora />}
           </div>
         )}
 
@@ -791,7 +1349,7 @@ export default function NavegadorDS22() {
                       <strong>{m.def.title}</strong> <span style={s.artRef}>{m.def.art}</span><br />{m.def.text}
                     </NoteBox>
                   )}
-                  <p style={s.p}>{m.desc}<span style={s.artRef}>{m.art}</span></p>
+                  <p style={s.p}>{withGlossary(m.desc)}<span style={s.artRef}>{m.art}</span></p>
 
                   {m.rows && (
                     <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13, marginBottom: 14 }}>
@@ -848,7 +1406,7 @@ export default function NavegadorDS22() {
                     </div>
                   )}
 
-                  {m.notes && <NoteBox>{m.notes}</NoteBox>}
+                  {m.notes && <NoteBox>{withGlossary(m.notes)}</NoteBox>}
 
                   {QUOTES.filter(x => x.cat === metaCat).length > 0 && (
                     <div style={{ marginTop: 20 }}>
@@ -880,7 +1438,7 @@ export default function NavegadorDS22() {
                   <span style={{ fontSize: 14, fontWeight: 700 }}>{a.name}</span>
                   <span style={s.artRef}>{a.ref}</span>
                 </div>
-                <p style={{ fontSize: 13, color: T.textSec, lineHeight: 1.75, margin: 0, fontFamily: T.font }}>{a.text}</p>
+                <p style={{ fontSize: 13, color: T.textSec, lineHeight: 1.75, margin: 0, fontFamily: T.font }}>{withGlossary(a.text)}</p>
               </div>
             ))}
             <div style={{ marginTop: 20 }}>
@@ -950,7 +1508,7 @@ export default function NavegadorDS22() {
             {filteredExcl.map((e, i) => (
               <div key={i} style={{ display: "flex", gap: 12, padding: "12px 0", borderBottom: `1px solid ${T.borderLight}` }}>
                 <span style={{ fontSize: 11, color: T.accent, fontWeight: 700, minWidth: 80, paddingTop: 2, fontFamily: T.fontMono }}>{e.ref}</span>
-                <span style={{ fontSize: 13, color: T.textSec, lineHeight: 1.65, fontFamily: T.font }}>{e.text}</span>
+                <span style={{ fontSize: 13, color: T.textSec, lineHeight: 1.65, fontFamily: T.font }}>{withGlossary(e.text)}</span>
               </div>
             ))}
           </div>
