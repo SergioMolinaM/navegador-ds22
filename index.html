@@ -26,6 +26,34 @@
   </head>
   <body>
     <div id="root"></div>
+
+    <!--
+      Netlify Forms — declaración estática para que el build de Netlify detecte
+      los formularios y cree los endpoints. Los envíos reales se hacen desde
+      React vía fetch() a la raíz "/". No tocar los `name` ni los `input name`.
+    -->
+    <form name="newsletter" data-netlify="true" netlify-honeypot="bot-field" hidden>
+      <input type="email" name="email" />
+      <input type="text" name="perfil" />
+      <input type="text" name="bot-field" />
+    </form>
+    <form name="auspicio" data-netlify="true" netlify-honeypot="bot-field" hidden>
+      <input type="text" name="nombre" />
+      <input type="email" name="email" />
+      <input type="text" name="empresa" />
+      <textarea name="mensaje"></textarea>
+      <input type="text" name="bot-field" />
+    </form>
+
     <script type="module" src="/src/main.jsx"></script>
+
+    <!--
+      Cloudflare Web Analytics — gratis, sin cookies, privacy-friendly.
+      Para activar: crear cuenta en https://www.cloudflare.com/web-analytics/,
+      agregar el sitio navegador-ds22.netlify.app y reemplazar __CLOUDFLARE_TOKEN__
+      por el token que entrega el panel. Hasta que esté reemplazado, no traquea.
+    -->
+    <script defer src="https://static.cloudflareinsights.com/beacon.min.js"
+      data-cf-beacon='{"token": "__CLOUDFLARE_TOKEN__"}'></script>
   </body>
 </html>

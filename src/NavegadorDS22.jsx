@@ -260,6 +260,33 @@ const COBERTURA_PC = [
     url: "https://www.paiscircular.cl/economia-circular/luego-de-4-anos-de-tramitacion-decreto-de-metas-para-pilas-y-aparatos-electricos-y-electronicos-entra-en-la-recta-final-para-ser-implementado/" },
 ];
 
+// ─── DIRECTORIO DE SISTEMAS DE GESTIÓN ──────────────────────────
+// Cards monetizables. tier='socio' = pagado; tier='listado' = libre/verificado;
+// tier='slot' = espacio disponible para venta directa al sponsor.
+const SISTEMAS_GESTION = [
+  {
+    nombre: "TRAEE",
+    operador: "Cámara de Comercio de Santiago (CCS)",
+    desc: "Sistema colectivo de gestión que opera tres puntos limpios en la Región Metropolitana (Parque O'Higgins, La Florida, San Bernardo). Evalúa expansión a regiones.",
+    web: "https://www.traee.cl",
+    cita: "Romina Reyes, gerenta (PC, 23 abr y 11 may 2026)",
+    tier: "listado",
+  },
+  {
+    nombre: "Wee Chile",
+    operador: "NHE",
+    desc: "Sistema colectivo en desarrollo. Sus voceros han sido protagonistas de la cobertura editorial del DS 22/2025.",
+    web: null,
+    cita: "Rodrigo Sagaceta (PC, 23 abr 2026)",
+    tier: "listado",
+  },
+  {
+    nombre: "Espacio disponible",
+    desc: "Si tu sistema de gestión, gestor o consultora trabaja en el ámbito del DS 22/2025, escríbenos para incorporar tu ficha al directorio.",
+    tier: "slot",
+  },
+];
+
 const WEBINAR_PC = {
   title: "Residuos de AEE: Claves del nuevo reglamento REP",
   desc: "Seminario web organizado por País Circular para analizar el alcance, las metas y las obligaciones del DS 22/2025.",
@@ -390,6 +417,156 @@ function MetaBar({ pct, max, color }) {
       <div style={{ height: "100%", width: `${Math.round((pct / max) * 100)}%`, background: color || T.accent,
         borderRadius: 3, transition: "width 0.4s ease" }} />
     </div>
+  );
+}
+
+// ─── FORMULARIO NETLIFY ─────────────────────────────────────────
+// Posta a Netlify Forms vía fetch. El form-name debe coincidir con un form
+// declarado en index.html para que Netlify lo detecte en build time.
+
+function encode(data) {
+  return Object.keys(data)
+    .map(k => encodeURIComponent(k) + "=" + encodeURIComponent(data[k]))
+    .join("&");
+}
+
+function FormularioNetlify({ mode = "newsletter" }) {
+  const [estado, setEstado] = useState("idle"); // idle | sending | ok | error
+  const [valores, setValores] = useState({});
+
+  const config = mode === "auspicio" ? {
+    formName: "auspicio",
+    intro: "Cuéntanos qué espacio te interesa auspiciar y te respondemos con opciones, formatos y tarifas.",
+    campos: [
+      { name: "nombre", label: "Tu nombre", type: "text", required: true },
+      { name: "empresa", label: "Empresa / institución", type: "text", required: true },
+      { name: "email", label: "Email de contacto", type: "email", required: true },
+      { name: "mensaje", label: "¿Qué te interesa auspiciar?", type: "textarea", required: true,
+        placeholder: "Ej.: directorio de sistemas de gestión, sección de metas, newsletter, evento…" },
+    ],
+    cta: "Enviar consulta",
+    ok: "Recibimos tu consulta. Te respondemos en menos de 48 horas.",
+  } : {
+    formName: "newsletter",
+    intro: "Recibe un correo cuando el MMA publique resoluciones complementarias, nuevas guías o cuando este navegador se actualice.",
+    campos: [
+      { name: "email", label: "Email", type: "email", required: true },
+      { name: "perfil", label: "Tu rol (opcional)", type: "select", required: false,
+        options: ["", "Productor / importador", "Sistema de gestión", "Gestor autorizado", "Comercializador", "Asesor legal", "Consultor / academia", "Medios", "Otro"] },
+    ],
+    cta: "Suscribirme",
+    ok: "Listo. Te avisaremos cuando haya novedades.",
+  };
+
+  const submit = async (e) => {
+    e.preventDefault();
+    if (estado === "sending") return;
+    setEstado("sending");
+    try {
+      const body = encode({ "form-name": config.formName, ...valores });
+      await fetch("/", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body,
+      });
+      setEstado("ok");
+      setValores({});
+    } catch (_) {
+      setEstado("error");
+    }
+  };
+
+  if (estado === "ok") {
+    return (
+      <div style={{
+        background: T.accentLight, border: `1px solid ${T.accent}33`, borderLeft: `4px solid ${T.accent}`,
+        borderRadius: T.radius, padding: "16px 18px", fontSize: 13, color: T.accentDark,
+        lineHeight: 1.6, fontFamily: T.font, fontWeight: 500,
+      }}>
+        <strong>✓ {config.ok}</strong>
+      </div>
+    );
+  }
+
+  const inputStyle = {
+    width: "100%", padding: "10px 12px", fontSize: 13.5, border: `1.5px solid ${T.border}`,
+    borderRadius: T.radius, outline: "none", background: T.bg, fontFamily: T.fontSans,
+    color: T.text, transition: "border 0.18s",
+  };
+
+  return (
+    <form onSubmit={submit} name={config.formName} data-netlify="true" netlify-honeypot="bot-field">
+      <input type="hidden" name="form-name" value={config.formName} />
+      <p style={{ fontSize: 13, color: T.textSec, lineHeight: 1.6, margin: "0 0 14px", fontFamily: T.font }}>
+        {config.intro}
+      </p>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 10, marginBottom: 12 }}>
+        {config.campos.map(c => (
+          <div key={c.name}>
+            <label style={{
+              display: "block", fontSize: 11, color: T.textHint, marginBottom: 4,
+              fontFamily: T.fontSans, fontWeight: 600, letterSpacing: "0.02em",
+            }}>
+              {c.label}{c.required && <span style={{ color: T.amber, marginLeft: 3 }}>*</span>}
+            </label>
+            {c.type === "textarea" ? (
+              <textarea
+                name={c.name}
+                required={c.required}
+                placeholder={c.placeholder}
+                value={valores[c.name] || ""}
+                onChange={e => setValores({ ...valores, [c.name]: e.target.value })}
+                rows={3}
+                style={{ ...inputStyle, resize: "vertical", minHeight: 80, fontFamily: T.font }}
+                onFocus={e => e.target.style.borderColor = T.accent}
+                onBlur={e => e.target.style.borderColor = T.border}
+              />
+            ) : c.type === "select" ? (
+              <select
+                name={c.name}
+                required={c.required}
+                value={valores[c.name] || ""}
+                onChange={e => setValores({ ...valores, [c.name]: e.target.value })}
+                style={inputStyle}
+                onFocus={e => e.target.style.borderColor = T.accent}
+                onBlur={e => e.target.style.borderColor = T.border}
+              >
+                {c.options.map(o => <option key={o} value={o}>{o || "Seleccionar…"}</option>)}
+              </select>
+            ) : (
+              <input
+                type={c.type}
+                name={c.name}
+                required={c.required}
+                placeholder={c.placeholder}
+                value={valores[c.name] || ""}
+                onChange={e => setValores({ ...valores, [c.name]: e.target.value })}
+                style={inputStyle}
+                onFocus={e => e.target.style.borderColor = T.accent}
+                onBlur={e => e.target.style.borderColor = T.border}
+              />
+            )}
+          </div>
+        ))}
+        {/* honeypot anti-spam */}
+        <input type="text" name="bot-field" tabIndex={-1} autoComplete="off"
+          style={{ position: "absolute", left: "-9999px" }} />
+      </div>
+      <button type="submit" disabled={estado === "sending"} className="pc-cta" style={{
+        padding: "11px 22px", fontSize: 13, fontWeight: 700, borderRadius: T.radius,
+        border: "none", background: estado === "sending" ? T.textHint : T.accentDark,
+        color: "#fff", cursor: estado === "sending" ? "wait" : "pointer",
+        fontFamily: T.fontSans, letterSpacing: "0.01em",
+        boxShadow: "0 2px 8px rgba(15,110,86,0.18)", transition: "all 0.18s",
+      }}>
+        {estado === "sending" ? "Enviando…" : config.cta + " →"}
+      </button>
+      {estado === "error" && (
+        <div style={{ marginTop: 10, fontSize: 12, color: T.amber, fontFamily: T.fontSans }}>
+          No pudimos enviar el formulario. Inténtalo de nuevo o escribe a info@paiscircular.cl.
+        </div>
+      )}
+    </form>
   );
 }
 
@@ -974,6 +1151,7 @@ export default function NavegadorDS22() {
   const [actorFilter, setActorFilter] = useState("todos");
   const [perfil, setPerfil] = useState(null);
   const [miCasoTab, setMiCasoTab] = useState("verificador");
+  const [showAuspicio, setShowAuspicio] = useState(false);
   const contentRef = useRef(null);
 
   const navigate = useCallback((p) => {
@@ -1044,13 +1222,14 @@ export default function NavegadorDS22() {
       `}</style>
 
       {/* SPONSOR BANNER */}
-      <a href="mailto:info@paiscircular.cl?subject=Auspicio%20navegador%20DS%2022%2F2025"
+      <button onClick={() => setShowAuspicio(true)}
         className="pc-sponsor"
         style={{
-          display: "block", position: "relative", textDecoration: "none",
+          display: "block", width: "100%", position: "relative", textDecoration: "none",
           background: "linear-gradient(90deg, #1B4332 0%, #2D6A4F 100%)",
           color: "#fff", padding: "12px 22px", borderBottom: `1px solid ${T.border}`,
-          transition: "filter 0.2s", overflow: "hidden",
+          border: "none", cursor: "pointer",
+          transition: "filter 0.2s", overflow: "hidden", textAlign: "left",
         }}>
         <span style={{
           position: "absolute", inset: 0, opacity: 0.08,
@@ -1071,10 +1250,10 @@ export default function NavegadorDS22() {
             Auspicie este espacio
           </span>
           <span style={{ fontSize: 12, opacity: 0.85 }}>
-            info@paiscircular.cl →
+            Quiero auspiciar →
           </span>
         </div>
-      </a>
+      </button>
 
       {/* HEADER — editorial País Circular */}
       <div style={{ padding: "26px 28px 24px", borderBottom: `1px solid ${T.border}`, background: T.bg }}>
@@ -1613,6 +1792,83 @@ export default function NavegadorDS22() {
               <ContextDivider />
               {QUOTES.filter(x => x.cat === "plazos" || x.cat === "actores").map((x, i) => <QuoteCard key={i} q={x} />)}
             </div>
+
+            {/* ─── DIRECTORIO SISTEMAS DE GESTIÓN ─── */}
+            <div style={{ marginTop: 28 }}>
+              <div style={{ borderTop: `1px solid ${T.border}`, paddingTop: 18, marginBottom: 14 }}>
+                <div style={{
+                  display: "inline-flex", alignItems: "center", gap: 6, fontSize: 11, fontWeight: 700,
+                  color: T.accentDark, background: T.accentLight, padding: "4px 12px", borderRadius: 20,
+                  letterSpacing: "0.02em",
+                }}>
+                  🏢 Directorio · Sistemas de Gestión
+                </div>
+              </div>
+              <p style={s.p}>
+                Sistemas colectivos e iniciativas en operación o desarrollo bajo el ámbito del DS 22/2025.
+                Datos verificados con cobertura de País Circular. ¿Trabajas en este sector? <button
+                  onClick={() => setShowAuspicio(true)}
+                  className="pc-link"
+                  style={{
+                    background: "transparent", border: "none", cursor: "pointer",
+                    fontSize: "inherit", fontWeight: 600, color: T.accent, padding: 0,
+                    borderBottom: `1px solid ${T.accentLight}`, fontFamily: "inherit",
+                  }}>Solicita tu ficha →</button>
+              </p>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 10 }}>
+                {SISTEMAS_GESTION.map((s_, i) => s_.tier === "slot" ? (
+                  <button key={i} onClick={() => setShowAuspicio(true)} className="pc-card-link" style={{
+                    display: "block", padding: "18px 16px", borderRadius: T.radius,
+                    border: `2px dashed ${T.border}`, background: T.bgAlt, textAlign: "center",
+                    cursor: "pointer", fontFamily: T.fontSans, transition: "all 0.18s",
+                  }}>
+                    <div style={{
+                      fontSize: 11, fontWeight: 700, color: T.accentDark, letterSpacing: "0.08em",
+                      textTransform: "uppercase", marginBottom: 6,
+                    }}>{s_.nombre}</div>
+                    <div style={{ fontSize: 12, color: T.textSec, lineHeight: 1.55, fontFamily: T.font }}>
+                      {s_.desc}
+                    </div>
+                    <div style={{ fontSize: 11, color: T.accent, fontWeight: 600, marginTop: 10 }}>
+                      Solicitar ficha →
+                    </div>
+                  </button>
+                ) : (
+                  <div key={i} style={{
+                    padding: "16px 18px", borderRadius: T.radius,
+                    border: `1px solid ${T.border}`, background: T.bg,
+                  }}>
+                    <div style={{
+                      fontSize: 15, fontWeight: 700, color: T.text, marginBottom: 2, fontFamily: T.fontSans,
+                    }}>{s_.nombre}</div>
+                    {s_.operador && (
+                      <div style={{
+                        fontSize: 11, color: T.textHint, marginBottom: 8, fontFamily: T.fontSans,
+                      }}>{s_.operador}</div>
+                    )}
+                    <p style={{
+                      fontSize: 12.5, color: T.textSec, lineHeight: 1.6, margin: "0 0 10px", fontFamily: T.font,
+                    }}>{s_.desc}</p>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 12, alignItems: "center" }}>
+                      {s_.web && (
+                        <a href={s_.web} target="_blank" rel="noopener noreferrer" className="pc-link"
+                          style={{
+                            fontSize: 11, color: T.accent, fontWeight: 700, textDecoration: "none",
+                            fontFamily: T.fontSans, borderBottom: `1px solid ${T.accentLight}`,
+                          }}>
+                          Sitio web ↗
+                        </a>
+                      )}
+                      {s_.cita && (
+                        <span style={{ fontSize: 10.5, color: T.textHint, fontStyle: "italic", fontFamily: T.font }}>
+                          Fuente: {s_.cita}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         )}
 
@@ -1832,6 +2088,29 @@ export default function NavegadorDS22() {
                 </ul>
               </div>
             </div>
+
+            {/* ─── NEWSLETTER ─── */}
+            <div style={{ marginTop: 28 }}>
+              <div style={{ borderTop: `1px solid ${T.border}`, paddingTop: 18, marginBottom: 14 }}>
+                <div style={{
+                  display: "inline-flex", alignItems: "center", gap: 6, fontSize: 11, fontWeight: 700,
+                  color: T.accentDark, background: T.accentLight, padding: "4px 12px", borderRadius: 20,
+                  letterSpacing: "0.02em",
+                }}>
+                  ✉️ Alertas DS 22/2025
+                </div>
+              </div>
+              <div style={{
+                background: T.bgAlt, border: `1px solid ${T.border}`, borderRadius: T.radius,
+                padding: "20px 22px",
+              }}>
+                <h3 style={{
+                  fontSize: 17, fontWeight: 700, margin: "0 0 4px", fontFamily: T.font,
+                  letterSpacing: "-0.015em", color: T.text,
+                }}>Mantente al día</h3>
+                <FormularioNetlify mode="newsletter" />
+              </div>
+            </div>
           </div>
         )}
 
@@ -1886,6 +2165,46 @@ export default function NavegadorDS22() {
           </div>
         </div>
       </div>
+
+      {/* MODAL AUSPICIO */}
+      {showAuspicio && (
+        <div onClick={() => setShowAuspicio(false)} style={{
+          position: "fixed", inset: 0, background: "rgba(15, 30, 24, 0.55)",
+          backdropFilter: "blur(2px)", zIndex: 100,
+          display: "flex", alignItems: "center", justifyContent: "center",
+          padding: 16,
+        }}>
+          <div onClick={(e) => e.stopPropagation()} style={{
+            background: T.bg, borderRadius: 14, maxWidth: 540, width: "100%",
+            maxHeight: "90vh", overflowY: "auto", boxShadow: "0 24px 60px rgba(0,0,0,0.25)",
+            border: `1px solid ${T.border}`,
+          }}>
+            <div style={{
+              padding: "20px 24px 14px", borderBottom: `1px solid ${T.border}`,
+              display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12,
+            }}>
+              <div>
+                <div style={{
+                  fontSize: 10.5, color: T.accent, fontWeight: 700, letterSpacing: "0.08em",
+                  textTransform: "uppercase", marginBottom: 4, fontFamily: T.fontSans,
+                }}>Auspicio · País Circular</div>
+                <h3 style={{
+                  fontSize: 19, fontWeight: 700, margin: 0, fontFamily: T.font,
+                  letterSpacing: "-0.015em", color: T.text, lineHeight: 1.25,
+                }}>Quiero auspiciar el navegador</h3>
+              </div>
+              <button onClick={() => setShowAuspicio(false)} style={{
+                border: "none", background: T.bgAlt, width: 32, height: 32, borderRadius: 8,
+                cursor: "pointer", fontSize: 16, color: T.textSec, fontWeight: 700,
+                display: "flex", alignItems: "center", justifyContent: "center",
+              }}>✕</button>
+            </div>
+            <div style={{ padding: "18px 24px 24px" }}>
+              <FormularioNetlify mode="auspicio" />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -90,5 +90,43 @@ window.addEventListener('message', function(e) {
         <li>Esperar propagación DNS (~30 minutos). Netlify gestiona el certificado SSL automáticamente.</li>
       </ol>
     </div>
+
+    <h2>Activar Cloudflare Web Analytics</h2>
+    <div class="card">
+      <p>Analytics gratuita, sin cookies, sin banner GDPR. Pasos para activarla:</p>
+      <ol>
+        <li>Crear cuenta en <strong>https://www.cloudflare.com/web-analytics/</strong>.</li>
+        <li>Agregar el sitio <code>navegador-ds22.netlify.app</code> (o el dominio custom si se configuró Opción C).</li>
+        <li>Copiar el <strong>token</strong> que entrega el panel.</li>
+        <li>En el repo, reemplazar <code>__CLOUDFLARE_TOKEN__</code> en <code>index.html</code> por el token real.</li>
+        <li>Commit + push: Netlify rebuildeará y la analítica empezará a llegar al panel.</li>
+      </ol>
+      <p><strong>Importante:</strong> hasta que se reemplace el token, el script de Cloudflare se carga pero no envía datos. No hay impacto en performance.</p>
+    </div>
+
+    <h2>Activar Netlify Forms (newsletter + auspicio)</h2>
+    <div class="card">
+      <p>Los formularios están declarados en <code>index.html</code> y Netlify los detecta automáticamente al primer deploy.</p>
+      <ol>
+        <li>Tras el primer deploy, ir a <em>Netlify → Site → Forms</em>. Deberían aparecer <code>newsletter</code> y <code>auspicio</code>.</li>
+        <li>Configurar notificaciones por email en <em>Forms → Form notifications</em> hacia <code>info@paiscircular.cl</code> (o quien corresponda).</li>
+        <li>El plan gratuito incluye 100 envíos/mes. Si se supera, considerar upgrade o exportar regularmente.</li>
+        <li>Los envíos llegan también al panel de Netlify, exportables como CSV.</li>
+      </ol>
+      <p><strong>Nota anti-spam:</strong> los formularios usan honeypot (<code>bot-field</code>). Si llegan muchos envíos basura, activar también el captcha de Netlify en <em>Forms → Settings</em>.</p>
+    </div>
+
+    <h2>Inventario de espacios sponsor</h2>
+    <div class="card">
+      <p>Posiciones disponibles hoy en el navegador:</p>
+      <ul>
+        <li><strong>Banner superior</strong> (verde, sticky): tier principal, 1 sponsor único.</li>
+        <li><strong>Directorio de Sistemas de Gestión</strong> (sección Obligaciones): fichas de TRAEE, Wee Chile y slots disponibles. Cada slot = 1 sponsor.</li>
+        <li><strong>Webinar destacado</strong> (sección Contexto): patrocinio de la grabación o evento futuro.</li>
+        <li><strong>Newsletter «Alertas DS 22/2025»</strong> (sección Contexto): patrocinio de envíos mensuales.</li>
+        <li><strong>Patrocinador por sección</strong> (Metas / Plazos / Exclusiones): logo + claim al pie de cada vista.</li>
+      </ul>
+      <p>Toda solicitud entra por el botón <strong>«Quiero auspiciar»</strong> del banner, que abre el formulario <code>auspicio</code> y registra el lead en Netlify Forms.</p>
+    </div>
   </body>
 </html>
