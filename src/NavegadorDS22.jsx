@@ -34,10 +34,57 @@ const T = {
 
 // ─── METADATA EDITORIAL ─────────────────────────────────────────
 const META = {
-  version: "1.1",
+  version: "1.2",
   reviewedAt: "15 mayo 2026",
   source: "DS 22/2025 (MMA) — Diario Oficial 7 mayo 2026, edición 44.443",
 };
+
+// Créditos editoriales — quien aparece acá da credibilidad. Editable.
+const CREDITOS = [
+  { rol: "Investigación y redacción", quien: "Equipo País Circular" },
+  { rol: "Edición",                   quien: "Pablo Badenier" },
+  { rol: "Datos del decreto",         quien: "Texto oficial DS 22/2025, MMA" },
+  { rol: "Diseño y desarrollo",       quien: "Tercera Letra · paiscircular.cl" },
+  { rol: "Revisión legal",            quien: "Por confirmar" },
+];
+
+// ─── COMPARATIVA REP CHILE ─────────────────────────────────────
+// Los 6 productos prioritarios de la Ley 20.920. Algunos decretos están
+// vigentes, otros aún en tramitación a la fecha de revisión.
+const COMPARATIVA_REP = [
+  {
+    producto: "Neumáticos", articulo: "Art. 10 Ley 20.920",
+    decreto: "DS 8/2019, MMA", do: "20 ene 2021",
+    estado: "Vigente", color: T.accent,
+    nota: "Primer decreto de metas REP publicado. Metas escalonadas hasta 90 % al noveno año.",
+  },
+  {
+    producto: "Envases y embalajes", articulo: "Art. 10 Ley 20.920",
+    decreto: "DS 12/2020, MMA", do: "16 mar 2021",
+    estado: "Vigente", color: T.accent,
+    nota: "Categorías: cartón, metal, plástico, vidrio y tetra. Metas diferenciadas por material.",
+  },
+  {
+    producto: "Pilas y AEE",
+    articulo: "Art. 10 Ley 20.920",
+    decreto: "DS 22/2025, MMA", do: "7 may 2026",
+    estado: "Este navegador", color: T.amber, highlight: true,
+    nota: "Combina pilas (cuarto producto prioritario) y AEE (quinto). Metas exigibles desde mayo 2028.",
+  },
+  {
+    producto: "Aceites lubricantes",
+    articulo: "Art. 10 Ley 20.920",
+    decreto: "En tramitación", do: "—",
+    estado: "En consulta", color: T.textHint,
+    nota: "Anteproyecto del decreto de metas en proceso de consulta pública y AGIES.",
+  },
+  {
+    producto: "Baterías", articulo: "Art. 10 Ley 20.920",
+    decreto: "En tramitación", do: "—",
+    estado: "En consulta", color: T.textHint,
+    nota: "Considera baterías de litio y plomo-ácido. Anteproyecto del decreto en elaboración.",
+  },
+];
 
 // ─── DATA: 100% DS 22/2025 ──────────────────────────────────────
 
@@ -438,34 +485,38 @@ function Term({ t, children }) {
           role="tooltip"
           style={{
             position: "absolute",
-            bottom: "calc(100% + 6px)",
+            bottom: "calc(100% + 8px)",
             left: "50%",
             transform: "translateX(-50%)",
             zIndex: 50,
-            width: 260,
-            background: "#1A1D21",
-            color: "#fff",
-            padding: "10px 12px",
+            width: 270,
+            background: "#FFFFFF",
+            color: T.text,
+            padding: "12px 14px",
             borderRadius: 8,
-            fontSize: 12,
-            lineHeight: 1.5,
-            fontFamily: T.fontSans,
+            border: `1px solid ${T.border}`,
+            borderTop: `3px solid ${T.accentDark}`,
+            fontSize: 12.5,
+            lineHeight: 1.55,
+            fontFamily: T.font,
             fontWeight: 400,
             fontStyle: "normal",
-            boxShadow: "0 8px 24px rgba(0,0,0,0.20)",
+            boxShadow: "0 10px 28px rgba(15, 110, 86, 0.14), 0 2px 6px rgba(0,0,0,0.06)",
             pointerEvents: "none",
             whiteSpace: "normal",
             textAlign: "left",
           }}
         >
           <span style={{
-            display: "block", fontSize: 11, fontWeight: 700, color: T.accentLight,
-            letterSpacing: "0.04em", marginBottom: 4, textTransform: "uppercase",
+            display: "block", fontSize: 10.5, fontWeight: 700, color: T.accentDark,
+            letterSpacing: "0.06em", marginBottom: 5, textTransform: "uppercase",
+            fontFamily: T.fontSans,
           }}>{t}</span>
-          {def.def}
+          <span style={{ color: T.textSec }}>{def.def}</span>
           <span style={{
-            display: "block", marginTop: 6, fontSize: 10.5, color: "#9CCDB9",
-            fontWeight: 600, letterSpacing: "0.02em",
+            display: "block", marginTop: 8, paddingTop: 6, borderTop: `1px solid ${T.borderLight}`,
+            fontSize: 10.5, color: T.accent, fontWeight: 600, letterSpacing: "0.02em",
+            fontFamily: T.fontSans,
           }}>{def.ref}</span>
         </span>
       )}
@@ -1007,22 +1058,35 @@ export default function NavegadorDS22() {
         </div>
       </a>
 
-      {/* HEADER */}
-      <div style={{ padding: "26px 28px 22px", borderBottom: `1px solid ${T.border}`, background: T.bg }}>
+      {/* HEADER — editorial País Circular */}
+      <div style={{ padding: "26px 28px 24px", borderBottom: `1px solid ${T.border}`, background: T.bg }}>
+
+        {/* Breadcrumb tipo PC: "Economía Circular / Ley REP" */}
+        <div style={{
+          fontSize: 10.5, color: T.textHint, fontWeight: 600, letterSpacing: "0.08em",
+          textTransform: "uppercase", marginBottom: 14, fontFamily: T.fontSans,
+        }}>
+          <span style={{ color: T.accentDark }}>Economía Circular</span>
+          <span style={{ margin: "0 8px", color: T.borderLight }}>/</span>
+          <span>Ley REP</span>
+          <span style={{ margin: "0 8px", color: T.borderLight }}>/</span>
+          <span>Herramienta interactiva</span>
+        </div>
+
         <div className="pc-header-top" style={{
-          display: "flex", alignItems: "center", justifyContent: "space-between",
-          gap: 16, marginBottom: 22, flexWrap: "wrap",
+          display: "flex", alignItems: "flex-start", justifyContent: "space-between",
+          gap: 16, marginBottom: 18, flexWrap: "wrap",
         }}>
           <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
             <img src="https://www.paiscircular.cl/wp-content/uploads/2022/08/cropped-Logo-Pais-Letras-Negras-270x270.png"
-              alt="País Circular" style={{ height: 56, width: 56, objectFit: "contain" }} />
+              alt="País Circular" style={{ height: 52, width: 52, objectFit: "contain" }} />
             <div>
               <div style={{
-                fontWeight: 700, fontSize: 19, color: T.text, letterSpacing: "-0.015em",
+                fontWeight: 700, fontSize: 18, color: T.text, letterSpacing: "-0.015em",
                 fontFamily: T.fontSans, lineHeight: 1.15,
               }}>País Circular</div>
               <div style={{
-                fontSize: 12, color: T.textSec, marginTop: 3, fontFamily: T.font, fontStyle: "italic",
+                fontSize: 11.5, color: T.textSec, marginTop: 3, fontFamily: T.font, fontStyle: "italic",
               }}>Una herramienta de País Circular</div>
             </div>
           </div>
@@ -1038,27 +1102,48 @@ export default function NavegadorDS22() {
               }}>
               Ver en Diario Oficial ↗
             </a>
-            <div style={{ fontSize: 10, color: T.textHint, marginTop: 2, fontStyle: "italic" }}>
-              (edición 7 mayo 2026)
-            </div>
           </div>
         </div>
+
         <div style={{
-          fontSize: 11, color: T.accent, fontWeight: 700, letterSpacing: "0.06em",
-          textTransform: "uppercase", marginBottom: 10,
+          fontSize: 10.5, color: T.accent, fontWeight: 700, letterSpacing: "0.08em",
+          textTransform: "uppercase", marginBottom: 8,
         }}>
           Decreto Supremo N° 22/2025 · Ministerio del Medio Ambiente
         </div>
-        <h1 style={{
-          fontSize: 26, fontWeight: 700, lineHeight: 1.22, margin: "0 0 10px",
+        <h1 className="pc-title-h1" style={{
+          fontSize: 28, fontWeight: 700, lineHeight: 1.18, margin: "0 0 12px",
           fontFamily: T.font, letterSpacing: "-0.025em", color: T.text,
         }}>
           Productos prioritarios de la Ley REP: pilas y aparatos eléctricos y electrónicos
         </h1>
-        <p style={{ fontSize: 14, color: T.textSec, lineHeight: 1.6, margin: 0, fontFamily: T.font }}>
+        <p style={{ fontSize: 15, color: T.textSec, lineHeight: 1.55, margin: 0, fontFamily: T.font }}>
           Navegador interactivo del DS 22/2025 — Metas, obligaciones, plazos y exclusiones.
         </p>
-        <p style={{ fontSize: 11, color: T.textHint, lineHeight: 1.55, margin: "10px 0 0", fontStyle: "italic" }}>
+
+        {/* Byline editorial tipo PC */}
+        <div style={{
+          marginTop: 18, paddingTop: 14, borderTop: `1px solid ${T.borderLight}`,
+          display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap",
+          fontSize: 11.5, color: T.textHint, fontFamily: T.fontSans,
+        }}>
+          <div style={{
+            width: 28, height: 28, borderRadius: "50%", background: T.accentLight,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            color: T.accentDark, fontWeight: 700, fontSize: 12,
+          }}>PC</div>
+          <span>Por <strong style={{ color: T.text, fontWeight: 600 }}>Equipo País Circular</strong></span>
+          <span style={{ color: T.borderLight }}>·</span>
+          <span>Última verificación: {META.reviewedAt}</span>
+          <span style={{ color: T.borderLight }}>·</span>
+          <span style={{
+            padding: "2px 8px", background: T.accentLight, color: T.accentDark,
+            borderRadius: 3, fontWeight: 700, fontSize: 10, letterSpacing: "0.04em",
+            textTransform: "uppercase",
+          }}>Lectura interactiva</span>
+        </div>
+
+        <p style={{ fontSize: 11, color: T.textHint, lineHeight: 1.55, margin: "14px 0 0", fontStyle: "italic" }}>
           Nota: el Diario Oficial redirige a la edición vigente del día. Si el enlace no muestra la edición del 7 de mayo de 2026,
           búsquela manualmente en «Ediciones Anteriores».
         </p>
@@ -1173,7 +1258,73 @@ export default function NavegadorDS22() {
               <strong>Vigencia:</strong> Títulos I, II, V y VI rigieron desde el 7 de mayo de 2026. Los Títulos III (metas) y IV (obligaciones asociadas) entrarán en vigencia 24 meses después: <strong>mayo 2028</strong>. <span style={s.artRef}>Art. 49</span>
             </NoteBox>
 
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 16 }}>
+            {/* ─── COMPARATIVA REP CHILE ─── */}
+            <div style={{ marginTop: 28, marginBottom: 8 }}>
+              <div style={s.label}>El DS 22 en el contexto de la Ley REP Chile</div>
+              <p style={{ fontSize: 13, color: T.textSec, lineHeight: 1.7, margin: "0 0 14px", fontFamily: T.font }}>
+                La Ley 20.920 define seis productos prioritarios. Este decreto cubre dos de ellos (pilas y AEE) en un solo cuerpo normativo.
+              </p>
+              <div style={{
+                border: `1px solid ${T.border}`, borderRadius: T.radius, overflow: "hidden",
+                background: T.bg,
+              }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12.5 }}>
+                  <thead>
+                    <tr style={{ background: T.bgAlt }}>
+                      {["Producto prioritario", "Decreto", "Publicación DO", "Estado"].map((h, i) => (
+                        <th key={i} style={{
+                          textAlign: "left", padding: "10px 12px", fontWeight: 700,
+                          fontSize: 10.5, color: T.textHint, letterSpacing: "0.05em",
+                          textTransform: "uppercase", fontFamily: T.fontSans,
+                          borderBottom: `1px solid ${T.border}`,
+                        }}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {COMPARATIVA_REP.map((r, i) => (
+                      <tr key={i} style={{
+                        background: r.highlight ? T.amberLight : "transparent",
+                      }}>
+                        <td style={{
+                          padding: "12px 12px", borderBottom: i < COMPARATIVA_REP.length - 1 ? `1px solid ${T.borderLight}` : "none",
+                          verticalAlign: "top",
+                        }}>
+                          <div style={{ fontWeight: 700, color: T.text, marginBottom: 2, fontFamily: T.fontSans }}>
+                            {r.producto}
+                          </div>
+                          <div style={{ fontSize: 11, color: T.textHint, fontFamily: T.font }}>{r.nota}</div>
+                        </td>
+                        <td style={{
+                          padding: "12px 12px", borderBottom: i < COMPARATIVA_REP.length - 1 ? `1px solid ${T.borderLight}` : "none",
+                          verticalAlign: "top", fontFamily: T.fontMono, fontSize: 11.5, color: T.textSec, whiteSpace: "nowrap",
+                        }}>{r.decreto}</td>
+                        <td style={{
+                          padding: "12px 12px", borderBottom: i < COMPARATIVA_REP.length - 1 ? `1px solid ${T.borderLight}` : "none",
+                          verticalAlign: "top", fontFamily: T.fontMono, fontSize: 11.5, color: T.textSec, whiteSpace: "nowrap",
+                        }}>{r.do}</td>
+                        <td style={{
+                          padding: "12px 12px", borderBottom: i < COMPARATIVA_REP.length - 1 ? `1px solid ${T.borderLight}` : "none",
+                          verticalAlign: "top",
+                        }}>
+                          <span style={{
+                            display: "inline-block", padding: "3px 9px", borderRadius: 4,
+                            fontSize: 10.5, fontWeight: 700, letterSpacing: "0.04em",
+                            background: r.color, color: r.color === T.textHint ? T.textSec : "#fff",
+                            textTransform: "uppercase", fontFamily: T.fontSans,
+                          }}>{r.estado}</span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div style={{ fontSize: 10.5, color: T.textHint, marginTop: 8, fontStyle: "italic", fontFamily: T.font }}>
+                Los datos de aceites lubricantes y baterías deben verificarse contra los anteproyectos vigentes del MMA al momento de uso.
+              </div>
+            </div>
+
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 24 }}>
               {PAGES.filter(p => p.id !== "inicio").map(p => (
                 <button key={p.id} onClick={() => navigate(p.id)} className="pc-btn" style={{
                   padding: "10px 18px", fontSize: 13, fontWeight: 600, borderRadius: T.radius,
@@ -1616,10 +1767,31 @@ export default function NavegadorDS22() {
       </div>
 
       {/* FOOTER */}
-      <div style={{ background: T.bgAlt, padding: "18px 24px", borderTop: `1px solid ${T.border}`, fontSize: 11,
+      <div style={{ background: T.bgAlt, padding: "20px 24px 18px", borderTop: `1px solid ${T.border}`, fontSize: 11,
         color: T.textHint, lineHeight: 1.75 }}>
-        <strong style={{ color: T.textSec }}>Sección normativa:</strong> DS N° 22, de 17 julio 2025, MMA. Diario Oficial 7 mayo 2026. Todas las cifras y plazos provienen del texto oficial firmado.<br />
-        <strong style={{ color: T.textSec }}>Sección editorial:</strong> Cifras de Considerandos son estimaciones del MMA. Declaraciones de País Circular, El Desconcierto, Carey, JDF Abogados.<br />
+
+        {/* CRÉDITOS */}
+        <div style={{ marginBottom: 16 }}>
+          <div style={{
+            fontSize: 10.5, fontWeight: 700, color: T.accentDark, letterSpacing: "0.08em",
+            textTransform: "uppercase", marginBottom: 10, fontFamily: T.fontSans,
+          }}>Créditos</div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "8px 18px" }}>
+            {CREDITOS.map((c, i) => (
+              <div key={i} style={{ fontSize: 11.5, fontFamily: T.fontSans, lineHeight: 1.5 }}>
+                <div style={{ color: T.textHint, fontWeight: 600, fontSize: 10.5, letterSpacing: "0.02em" }}>
+                  {c.rol}
+                </div>
+                <div style={{ color: T.text, fontWeight: 600 }}>{c.quien}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div style={{ borderTop: `1px solid ${T.borderLight}`, paddingTop: 14, marginBottom: 4 }}>
+          <strong style={{ color: T.textSec }}>Sección normativa:</strong> DS N° 22, de 17 julio 2025, MMA. Diario Oficial 7 mayo 2026. Todas las cifras y plazos provienen del texto oficial firmado.<br />
+          <strong style={{ color: T.textSec }}>Sección editorial:</strong> Cifras de Considerandos son estimaciones del MMA. Declaraciones de País Circular, El Desconcierto, Carey, JDF Abogados.<br />
+        </div>
         <div style={{
           marginTop: 14, paddingTop: 12, borderTop: `1px solid ${T.borderLight}`,
           display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap",
