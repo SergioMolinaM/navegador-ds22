@@ -741,9 +741,8 @@ function Onboarding({ onStart, onOpenAuspicio }) {
           fontSize: 10.5, color: T.accentDark, fontWeight: 700, letterSpacing: "0.08em",
           textTransform: "uppercase", marginBottom: 14, textAlign: "center",
         }}>Qué puedes hacer aquí</div>
-        <div style={{
-          display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-          gap: 10,
+        <div className="pc-do-grid" style={{
+          display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 10,
         }}>
           {WHAT_YOU_CAN_DO.map((w, i) => (
             <div key={i} style={{
@@ -1511,7 +1510,16 @@ export default function NavegadorDS22() {
 
   const finishOnboarding = useCallback(() => {
     setShowOnboarding(false);
+    if (typeof window !== "undefined") {
+      try { window.scrollTo({ top: 0, behavior: "instant" }); } catch { window.scrollTo(0, 0); }
+    }
   }, []);
+
+  // Scroll al tope cada vez que cambia showOnboarding (entrada al app).
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try { window.scrollTo({ top: 0, behavior: "instant" }); } catch { window.scrollTo(0, 0); }
+  }, [showOnboarding]);
 
   useEffect(() => {
     if (contentRef.current) contentRef.current.scrollTo({ top: 0, behavior: "smooth" });
@@ -1605,6 +1613,8 @@ export default function NavegadorDS22() {
 
       {/* INLINE HOVER STYLES */}
       <style>{`
+        .tabs-nav { scrollbar-width: none; -ms-overflow-style: none; }
+        .tabs-nav::-webkit-scrollbar { display: none; }
         .pc-tab:hover { color: #5F6368 !important; background: rgba(29,158,117,0.06) !important; }
         .pc-chip:hover { border-color: #2D6A4F !important; color: #1B4332 !important; background: #F1F8F4 !important; box-shadow: 0 1px 4px rgba(45,106,79,0.10); }
         .pc-chip-active:hover { filter: brightness(0.96); box-shadow: 0 2px 8px rgba(0,0,0,0.10); }
@@ -1621,109 +1631,93 @@ export default function NavegadorDS22() {
       `}</style>
 
       {/* SPONSOR BANNER */}
-      <button onClick={() => setShowAuspicio(true)}
-        className="pc-sponsor"
-        style={{
-          display: "block", width: "100%", position: "relative", textDecoration: "none",
-          background: "linear-gradient(90deg, #1B4332 0%, #2D6A4F 100%)",
-          color: "#fff", padding: "12px 22px", borderBottom: `1px solid ${T.border}`,
-          border: "none", cursor: "pointer",
-          transition: "filter 0.2s", overflow: "hidden", textAlign: "left",
-        }}>
-        <span style={{
-          position: "absolute", inset: 0, opacity: 0.08,
-          backgroundImage: "radial-gradient(circle at 1px 1px, #fff 1px, transparent 0)",
-          backgroundSize: "16px 16px", pointerEvents: "none",
-        }} />
-        <div style={{
-          position: "relative", display: "flex", alignItems: "center", justifyContent: "center",
-          gap: 12, flexWrap: "wrap", fontFamily: T.fontSans,
-        }}>
-          <span style={{
-            fontSize: 10, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase",
-            background: "rgba(255,255,255,0.16)", padding: "3px 8px", borderRadius: 4,
+      {SPONSOR.active ? (
+        <a href={SPONSOR.url || "#"} target="_blank" rel="noopener noreferrer"
+          className="pc-sponsor"
+          style={{
+            display: "flex", width: "100%", alignItems: "center", justifyContent: "center",
+            gap: 14, textDecoration: "none",
+            background: "linear-gradient(90deg, #1B4332 0%, #2D6A4F 100%)",
+            color: "#fff", padding: "12px 22px", borderBottom: `1px solid ${T.border}`,
+            transition: "filter 0.2s", overflow: "hidden", fontFamily: T.fontSans,
           }}>
-            Espacio disponible
+          <span style={{
+            fontSize: 10, color: "rgba(255,255,255,0.85)", fontWeight: 600, letterSpacing: "0.1em",
+            textTransform: "uppercase",
+          }}>Presentado por</span>
+          {SPONSOR.logo && (
+            <img src={SPONSOR.logo} alt={SPONSOR.name}
+              style={{ height: 22, width: "auto", objectFit: "contain" }} />
+          )}
+          <span style={{ fontSize: 13, fontWeight: 700, letterSpacing: "0.01em" }}>
+            {SPONSOR.name}
           </span>
-          <span style={{ fontSize: 13, fontWeight: 600, letterSpacing: "0.01em" }}>
-            Auspicie este espacio
-          </span>
-          <span style={{ fontSize: 12, opacity: 0.85 }}>
-            Quiero auspiciar →
-          </span>
-        </div>
-      </button>
+        </a>
+      ) : (
+        <button onClick={() => setShowAuspicio(true)}
+          className="pc-sponsor"
+          style={{
+            display: "flex", width: "100%", alignItems: "center", justifyContent: "center",
+            gap: 10, height: 36, padding: "0 18px",
+            background: T.bgAlt, color: T.textSec, border: "none",
+            borderBottom: `1px solid ${T.border}`,
+            cursor: "pointer", fontFamily: T.fontSans, fontSize: 12,
+            transition: "background 0.2s",
+          }}>
+          <span>Espacio auspiciado disponible</span>
+          <span style={{ color: T.borderLight }}>·</span>
+          <span style={{ color: T.accentDark, fontWeight: 700 }}>Más información →</span>
+        </button>
+      )}
 
-      {/* HEADER — editorial País Circular */}
-      <div style={{ padding: "26px 28px 24px", borderBottom: `1px solid ${T.border}`, background: T.bg }}>
+      {/* HEADER — fusionado */}
+      <div style={{ padding: "24px 28px 22px", borderBottom: `1px solid ${T.border}`, background: T.bg }}>
 
-        {/* Breadcrumb tipo PC: "Economía Circular / Ley REP" */}
-        <div style={{
-          fontSize: 10.5, color: T.textHint, fontWeight: 600, letterSpacing: "0.08em",
-          textTransform: "uppercase", marginBottom: 14, fontFamily: T.fontSans,
-        }}>
-          <span style={{ color: T.accentDark }}>Economía Circular</span>
-          <span style={{ margin: "0 8px", color: T.borderLight }}>/</span>
-          <span>Ley REP</span>
-          <span style={{ margin: "0 8px", color: T.borderLight }}>/</span>
-          <span>Herramienta interactiva</span>
-        </div>
-
+        {/* Fila 1 — logotipo + link DO */}
         <div className="pc-header-top" style={{
-          display: "flex", alignItems: "flex-start", justifyContent: "space-between",
-          gap: 16, marginBottom: 18, flexWrap: "wrap",
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          gap: 16, marginBottom: 22, flexWrap: "wrap",
         }}>
           <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
             <img src="https://www.paiscircular.cl/wp-content/uploads/2022/08/cropped-Logo-Pais-Letras-Negras-270x270.png"
-              alt="País Circular" style={{ height: 52, width: 52, objectFit: "contain" }} />
-            <div>
-              <div style={{
-                fontWeight: 700, fontSize: 18, color: T.text, letterSpacing: "-0.015em",
-                fontFamily: T.fontSans, lineHeight: 1.15,
-              }}>País Circular</div>
-              <div style={{
-                fontSize: 11.5, color: T.textSec, marginTop: 3, fontFamily: T.font, fontStyle: "italic",
-              }}>Una herramienta de País Circular</div>
+              alt="País Circular" style={{ height: 48, width: 48, objectFit: "contain" }} />
+            <div style={{
+              fontWeight: 800, fontSize: 18, color: "#1B4332", letterSpacing: "0.02em",
+              fontFamily: T.fontSans, lineHeight: 1,
+            }}>
+              PAÍS CIRCULAR<sup style={{ fontSize: 9, marginLeft: 1, top: -6 }}>®</sup>
             </div>
           </div>
-          <div style={{ textAlign: "right", fontSize: 11, color: T.textHint, lineHeight: 1.6 }}>
-            <div><strong style={{ color: T.textSec, fontWeight: 600 }}>DO:</strong> 7 mayo 2026</div>
-            <div><strong style={{ color: T.textSec, fontWeight: 600 }}>Metas:</strong> mayo 2028</div>
-            <a href="https://www.diariooficial.interior.gob.cl/publicaciones/2026/05/07/44443/01/2805526.pdf"
-              target="_blank" rel="noopener noreferrer" className="pc-link"
-              style={{
-                display: "inline-block", marginTop: 6, fontSize: 11, fontWeight: 600,
-                color: T.accent, textDecoration: "none", borderBottom: `1px solid ${T.accentLight}`,
-                paddingBottom: 1, transition: "all 0.15s",
-              }}>
-              Descargar decreto oficial (PDF) ↗
-            </a>
-          </div>
+          <a href="https://www.diariooficial.interior.gob.cl/publicaciones/2026/05/07/44443/01/2805526.pdf"
+            target="_blank" rel="noopener noreferrer" className="pc-link"
+            style={{
+              fontSize: 12, fontWeight: 600, color: T.accent,
+              textDecoration: "none", borderBottom: `1px solid ${T.accentLight}`,
+              paddingBottom: 1, transition: "all 0.15s",
+            }}>
+            Descargar decreto (PDF) ↗
+          </a>
         </div>
 
-        <div style={{
-          fontSize: 10.5, color: T.accent, fontWeight: 700, letterSpacing: "0.08em",
-          textTransform: "uppercase", marginBottom: 8,
-        }}>
-          Decreto Supremo N° 22/2025 · Ministerio del Medio Ambiente
-        </div>
+        {/* Fila 2 — título + metadata */}
         <h1 className="pc-title-h1" style={{
-          fontSize: 28, fontWeight: 700, lineHeight: 1.2, margin: "0 0 12px",
-          fontFamily: T.font, letterSpacing: "-0.025em", color: T.text,
+          fontSize: 24, fontWeight: 700, lineHeight: 1.25, margin: "0 0 10px",
+          fontFamily: T.font, letterSpacing: "-0.02em", color: T.text,
         }}>
           Productos prioritarios de la Ley REP:<br />
           Pilas y Aparatos Eléctricos y Electrónicos
         </h1>
-        <p style={{ fontSize: 15, color: T.textSec, lineHeight: 1.55, margin: 0, fontFamily: T.font }}>
-          Navegador interactivo del DS 22/2025
+        <p style={{ fontSize: 13, color: T.textHint, lineHeight: 1.55, margin: 0, fontFamily: T.fontSans }}>
+          DS 22/2025 · Publicado en el Diario Oficial el 7 de mayo de 2026 · Metas exigibles mayo 2028
         </p>
 
       </div>
 
       {/* NAV TABS (sticky) */}
-      <div style={{
+      <div className="tabs-nav" style={{
         display: "flex", gap: 2, padding: "8px 8px 0",
-        borderBottom: `1px solid ${T.border}`, overflowX: "auto",
+        borderBottom: `1px solid ${T.border}`,
+        overflowX: "auto", WebkitOverflowScrolling: "touch",
         background: T.bg, position: "sticky", top: 0, zIndex: 10,
         boxShadow: "0 1px 0 rgba(0,0,0,0.02)",
       }}>
