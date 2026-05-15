@@ -32,6 +32,13 @@ const T = {
   fontMono: "'JetBrains Mono', 'Fira Code', monospace",
 };
 
+// ─── METADATA EDITORIAL ─────────────────────────────────────────
+const META = {
+  version: "1.1",
+  reviewedAt: "15 mayo 2026",
+  source: "DS 22/2025 (MMA) — Diario Oficial 7 mayo 2026, edición 44.443",
+};
+
 // ─── DATA: 100% DS 22/2025 ──────────────────────────────────────
 
 const CATS = [
@@ -84,6 +91,26 @@ const METAS = {
   },
 };
 
+// Definición general de AEE — base para entender el ámbito de aplicación
+const DEFINICIONES_AMBITO = [
+  {
+    id: "aee", title: "Aparatos eléctricos y electrónicos (AEE)", ref: "Art. 2° N°2",
+    text: "Aparatos que para funcionar necesitan corriente eléctrica o campos electromagnéticos, así como aparatos para la generación, transferencia y medición de tales corrientes y campos. Categorías reconocidas en el decreto: aparatos de intercambio de temperatura (AIT), paneles fotovoltaicos (PFV) y otros AEE (todos los demás).",
+  },
+  {
+    id: "ait", title: "Aparatos de intercambio de temperatura (AIT)", ref: "Art. 2° N°1",
+    text: "Aparatos que enfrían, calientan y/o deshumidifican mediante gases refrigerantes, aceites u otras sustancias distintas del agua. Incluye refrigeradores, aires acondicionados, radiadores. Excluye aparatos que generan calor por resistencias eléctricas o combustión.",
+  },
+  {
+    id: "pfv", title: "Paneles fotovoltaicos (PFV)", ref: "Art. 2° N°12",
+    text: "AEE que generan y suministran electricidad a partir de luz solar. No se consideran PFV los de superficie menor a 0,25 m² (que clasifican como «otros AEE»). Los parques solares no califican como instalaciones fijas de gran envergadura (art. 3° c).",
+  },
+  {
+    id: "pilas", title: "Pilas", ref: "Art. 2° N°13",
+    text: "Fuente de energía eléctrica por transformación directa de energía química, unidad integrada al uso final, peso menor a 5 kg, no diseñada para incorporarse en baterías mayores. Excluye pilas de composición plomo-ácido.",
+  },
+];
+
 const ACTORS = [
   { id: "productores", name: "Productores", ref: "Art. 6°, 8°", icon: "🏢",
     text: "La REP aplica a quienes introduzcan pilas y/o AEE en el mercado nacional. Microempresas (Ley 20.416) exentas de metas, pero no de informar (art. 9°). Inscripción en Ventanilla Única RETC dentro de 4 meses desde primera introducción. Permanencia mínima 1 año en el sistema de gestión.",
@@ -103,6 +130,12 @@ const ACTORS = [
   { id: "consumidores", name: "Consumidores", ref: "Art. 46°", icon: "🏠",
     text: "Obligados a entregar residuos de pilas y AEE a un sistema de gestión, a través de los mecanismos de recolección ofrecidos, bajo las condiciones informadas públicamente.",
     tags: ["consumidor","persona","ciudadano","entregar","domiciliario","obligación"] },
+  { id: "recicladores_base", name: "Recicladores de base", ref: "Título V", icon: "👷",
+    text: "Reconocidos por la Ley 20.920 como gestores cuando estén certificados (art. 38 Ley REP). El Título V del decreto promueve su integración a los sistemas de gestión. La articulación operativa con recicladores de base debe definirse en los planes de gestión presentados al MMA.",
+    tags: ["reciclador","base","informal","economía circular","social","certificación"] },
+  { id: "municipalidades", name: "Municipalidades", ref: "Título V", icon: "🏛️",
+    text: "Pueden suscribir convenios con los sistemas de gestión para la instalación de puntos limpios, campañas de recolección y educación ambiental en su territorio. Su rol es voluntario-colaborativo, no son sujetos obligados por el decreto. La cobertura GRANSIC del art. 31 se mide a nivel comunal.",
+    tags: ["municipalidad","municipio","comuna","convenio","punto limpio","educación"] },
 ];
 
 const EXCLUSIONS = [
@@ -120,12 +153,14 @@ const EXCLUSIONS = [
 
 const TIMELINE = [
   { date: "17 julio 2025", text: "Firma del decreto por el Presidente de la República", done: true },
-  { date: "27 agosto 2025", text: "Toma de razón, Contraloría General de la República", done: true },
-  { date: "7 mayo 2026", text: "Publicación en el Diario Oficial — vigencia Títulos I, II, V, VI", done: true },
-  { date: "~Nov 2026", text: "Herramienta informática MMA para cálculo Weibull PFV (6 meses)", done: false },
-  { date: "~Ago 2027", text: "Plazo para presentar planes de gestión (15 meses, art. 5° trans.)", done: false },
-  { date: "~Nov 2027", text: "Primera declaración consumidores industriales (18 meses, art. 6° trans.)", done: false },
-  { date: "Mayo 2028", text: "Vigencia Títulos III y IV — metas y obligaciones exigibles", done: false, highlight: true },
+  { date: "27 agosto 2025", text: "Primer envío del decreto a la Contraloría General de la República (con observaciones)", done: true },
+  { date: "18 marzo 2026", text: "Aplazamiento de la toma de razón — cobertura País Circular", done: true },
+  { date: "23 abril 2026", text: "Toma de razón definitiva, Contraloría General de la República", done: true },
+  { date: "7 mayo 2026", text: "Publicación en el Diario Oficial — vigencia inmediata Títulos I, II, V y VI", done: true },
+  { date: "~noviembre 2026", text: "Herramienta informática del MMA para cálculo Weibull PFV (6 meses desde DO, art. 26 inc. final)", done: false },
+  { date: "~agosto 2027", text: "Plazo para presentar planes de gestión (15 meses desde DO, art. 5° transitorio)", done: false },
+  { date: "~noviembre 2027", text: "Primera declaración de consumidores industriales (18 meses desde DO, art. 6° transitorio)", done: false },
+  { date: "7 mayo 2028", text: "Entrada en vigencia de Títulos III y IV — metas y obligaciones asociadas exigibles", done: false, highlight: true },
 ];
 
 const COBERTURA = [
@@ -149,7 +184,7 @@ const QUOTES = [
   { text: "Falta una guía que permita interpretar cuáles aparatos van a estar afectos y cuáles excluidos. Los AIT son peligrosos cuando se intervienen por los gases refrigerantes.", who: "Mitzy Lagos, Midas Chile", src: "País Circular, 15 jun 2025", cat: "ait" },
   { text: "Existen al menos dos Sistemas de Gestión colectivos en desarrollo: TRAEE (CCS) y Wee Chile (NHE).", who: "", src: "El Desconcierto, 23 abr 2026", cat: "plazos" },
   { text: "Se estima que en 2025 se introdujeron ~3.000 t de pilas y ~279.600 t de AEE al mercado. Se generaron ~2.600 t de residuos de pilas y ~220.700 t de RAEE.", who: "Considerandos 3°–4°", src: "DS 22/2025, texto oficial", cat: "general" },
-  { text: "Al año 2024 se han introducido al mercado más de un millón de toneladas de paneles FV con un crecimiento promedio anual de ~400% entre 2012 y 2024.", who: "Considerando 23°", src: "DS 22/2025, texto oficial", cat: "pfv" },
+  { text: "Al año 2024 se habían introducido al mercado nacional más de un millón de toneladas de paneles fotovoltaicos, con un fuerte crecimiento sostenido en el período 2012–2024.", who: "Considerando 23°", src: "DS 22/2025, texto oficial", cat: "pfv" },
   { text: "Cerca del 90% de un panel fotovoltaico está compuesto por materiales reciclables, como vidrio y aluminio.", who: "Considerando 25°", src: "DS 22/2025, texto oficial", cat: "pfv" },
   { text: "Los beneficios económicos y sociales de la regulación propuesta equivalen a 0,64 veces sus costos.", who: "Considerando 47° (AGIES actualizado)", src: "DS 22/2025, texto oficial", cat: "general" },
 ];
@@ -543,7 +578,7 @@ export default function NavegadorDS22() {
               en el marco de la Ley N° 20.920 de Responsabilidad Extendida del Productor.
             </p>
 
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(155px, 1fr))", gap: 10, marginBottom: 20 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(155px, 1fr))", gap: 10, marginBottom: 16 }}>
               {[
                 { l: "Publicación DO", v: "7 mayo 2026", sub: "Vigencia inmediata (Títulos I, II, V, VI)" },
                 { l: "Metas exigibles", v: "Mayo 2028", sub: "24 meses desde publicación" },
@@ -554,6 +589,54 @@ export default function NavegadorDS22() {
                   <div style={{ fontSize: 11, color: T.textHint, marginBottom: 4 }}>{k.l}</div>
                   <div style={{ fontSize: 20, fontWeight: 700, fontFamily: T.fontSans }}>{k.v}</div>
                   <div style={{ fontSize: 11, color: T.textSec, marginTop: 3 }}>{k.sub}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* DESTACADO EDITORIAL: AGIES */}
+            <div style={{
+              display: "grid", gridTemplateColumns: "auto 1fr", gap: 16, alignItems: "center",
+              background: "linear-gradient(135deg, #FDF6E3 0%, #FFFBEE 100%)",
+              border: `1px solid ${T.amber}33`, borderLeft: `4px solid ${T.amber}`,
+              borderRadius: T.radius, padding: "16px 20px", marginBottom: 20,
+            }}>
+              <div style={{ textAlign: "center", minWidth: 100 }}>
+                <div style={{ fontSize: 32, fontWeight: 800, color: T.amber, fontFamily: T.fontSans, letterSpacing: "-0.03em", lineHeight: 1 }}>
+                  0,64×
+                </div>
+                <div style={{ fontSize: 10, color: T.textHint, fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", marginTop: 4 }}>
+                  Beneficios / Costos
+                </div>
+              </div>
+              <div>
+                <div style={{ fontSize: 11, color: T.amber, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: 4 }}>
+                  Dato clave del AGIES
+                </div>
+                <div style={{ fontSize: 14, color: T.text, lineHeight: 1.55, fontFamily: T.font }}>
+                  Según el Análisis General de Impacto Económico y Social actualizado, los beneficios económicos y sociales
+                  de la regulación equivalen a <strong>0,64 veces sus costos</strong>. Es decir, el VAN proyectado del decreto
+                  es negativo en la estimación oficial.
+                </div>
+                <div style={{ fontSize: 11, color: T.textHint, marginTop: 6, fontStyle: "italic" }}>
+                  Considerando 47°, DS 22/2025
+                </div>
+              </div>
+            </div>
+
+            <div style={s.label}>¿Qué se considera dentro del ámbito?</div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 10, marginBottom: 20 }}>
+              {DEFINICIONES_AMBITO.map(d => (
+                <div key={d.id} style={{
+                  background: T.bg, border: `1px solid ${T.border}`, borderRadius: T.radius,
+                  padding: "12px 14px",
+                }}>
+                  <div style={{ display: "flex", alignItems: "baseline", gap: 6, marginBottom: 6 }}>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: T.text, fontFamily: T.fontSans }}>{d.title}</div>
+                    <span style={s.artRef}>{d.ref}</span>
+                  </div>
+                  <div style={{ fontSize: 12.5, color: T.textSec, lineHeight: 1.6, fontFamily: T.font }}>
+                    {d.text}
+                  </div>
                 </div>
               ))}
             </div>
@@ -975,14 +1058,31 @@ export default function NavegadorDS22() {
       </div>
 
       {/* FOOTER */}
-      <div style={{ background: T.bgAlt, padding: "16px 24px", borderTop: `1px solid ${T.border}`, fontSize: 11,
+      <div style={{ background: T.bgAlt, padding: "18px 24px", borderTop: `1px solid ${T.border}`, fontSize: 11,
         color: T.textHint, lineHeight: 1.75 }}>
         <strong style={{ color: T.textSec }}>Sección normativa:</strong> DS N° 22, de 17 julio 2025, MMA. Diario Oficial 7 mayo 2026. Todas las cifras y plazos provienen del texto oficial firmado.<br />
-        <strong style={{ color: T.textSec }}>Sección editorial:</strong> Cifras de Considerandos son estimaciones MMA. Declaraciones de País Circular, El Desconcierto, Carey, JDF Abogados.<br />
-        <div style={{ marginTop: 10, display: "flex", alignItems: "center", gap: 8 }}>
-          <img src="https://www.paiscircular.cl/wp-content/uploads/2022/08/cropped-Logo-Pais-Letras-Negras-270x270.png"
-            alt="País Circular" style={{ height: 18, width: 18, objectFit: "contain" }} />
-          <span>Elaborado por <strong style={{ color: T.text }}>País Circular</strong> · paiscircular.cl</span>
+        <strong style={{ color: T.textSec }}>Sección editorial:</strong> Cifras de Considerandos son estimaciones del MMA. Declaraciones de País Circular, El Desconcierto, Carey, JDF Abogados.<br />
+        <div style={{
+          marginTop: 14, paddingTop: 12, borderTop: `1px solid ${T.borderLight}`,
+          display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap",
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <img src="https://www.paiscircular.cl/wp-content/uploads/2022/08/cropped-Logo-Pais-Letras-Negras-270x270.png"
+              alt="País Circular" style={{ height: 20, width: 20, objectFit: "contain" }} />
+            <span>Elaborado por <strong style={{ color: T.text }}>País Circular</strong> · paiscircular.cl</span>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 10.5, color: T.textHint }}>
+            <span style={{
+              display: "inline-flex", alignItems: "center", gap: 5,
+              padding: "3px 10px", borderRadius: 12,
+              background: T.accentLight, color: T.accentDark, fontWeight: 600, letterSpacing: "0.02em",
+            }}>
+              <span style={{
+                width: 6, height: 6, borderRadius: "50%", background: T.accent, display: "inline-block",
+              }} />
+              v{META.version} · Última verificación: {META.reviewedAt}
+            </span>
+          </div>
         </div>
       </div>
     </div>
