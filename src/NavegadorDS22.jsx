@@ -343,11 +343,6 @@ const GLOSARIO = {
   "Microempresa": { def: "Según Ley 20.416: empresa con ventas anuales hasta 2.400 UF. Exenta de metas y obligaciones asociadas, pero debe informar al MMA.", ref: "Art. 9°" },
 };
 
-// ─── PARÁMETROS WEIBULL PARA CALCULADORA PFV ────────────────────
-// VP(t,n) = (α/β^α) × (n-t)^(α-1) × e^(-((n-t)/β)^α). Art. 26.
-const WEIBULL_ALPHA = 3.5;
-const WEIBULL_BETA = 25.0;
-
 // ─── SECTIONS ────────────────────────────────────────────────────
 const PAGES = [
   { id: "inicio",      label: "Resumen",       icon: "📋" },
@@ -471,7 +466,7 @@ function FormularioNetlify({ mode = "newsletter" }) {
       });
       setEstado("ok");
       setValores({});
-    } catch (_) {
+    } catch {
       setEstado("error");
     }
   };
@@ -797,6 +792,7 @@ const VEREDICTOS = {
 };
 
 function VerificadorAmbito() {
+  // eslint-disable-next-line no-unused-vars
   const [respuestas, setRespuestas] = useState({});
   const [idx, setIdx] = useState(0);
   const [veredicto, setVeredicto] = useState(null);
@@ -1167,17 +1163,13 @@ export default function NavegadorDS22() {
     if (typeof window === "undefined") return;
     const send = () => {
       const h = document.getElementById("root")?.scrollHeight || document.body.scrollHeight;
-      try { window.parent.postMessage({ type: "resize", height: h }, "*"); } catch (_) {}
+      try { window.parent.postMessage({ type: "resize", height: h }, "*"); } catch { /* iframe parent puede no aceptar postMessage */ }
     };
     send();
     const obs = new ResizeObserver(send);
     obs.observe(document.body);
     return () => obs.disconnect();
   }, [page, showOnboarding, metaCat, actorFilter, perfil, miCasoTab]);
-
-  if (showOnboarding) {
-    return <Onboarding onStart={() => setShowOnboarding(false)} />;
-  }
 
   const q = search.toLowerCase().trim();
 
@@ -1197,6 +1189,10 @@ export default function NavegadorDS22() {
     if (!q) return QUOTES;
     return QUOTES.filter(x => x.text.toLowerCase().includes(q) || x.who.toLowerCase().includes(q) || x.cat.includes(q));
   }, [q]);
+
+  if (showOnboarding) {
+    return <Onboarding onStart={() => setShowOnboarding(false)} />;
+  }
 
   // ─── RENDER ──────────────────────────────────────────────────
 
