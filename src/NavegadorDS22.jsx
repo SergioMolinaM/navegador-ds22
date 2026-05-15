@@ -154,6 +154,53 @@ const QUOTES = [
   { text: "Los beneficios económicos y sociales de la regulación propuesta equivalen a 0,64 veces sus costos.", who: "Considerando 47° (AGIES actualizado)", src: "DS 22/2025, texto oficial", cat: "general" },
 ];
 
+// ─── COBERTURA EDITORIAL PAÍS CIRCULAR ──────────────────────────
+const COBERTURA_PC = [
+  { date: "9 jun 2025", title: "Decreto P+AEE entra en la recta final",
+    url: "https://www.paiscircular.cl/economia-circular/luego-de-4-anos-de-tramitacion-decreto-de-metas-para-pilas-y-aparatos-electricos-y-electronicos-entra-en-la-recta-final-para-ser-implementado/" },
+  { date: "15 jun 2025", title: "Expertos analizan ejes del decreto",
+    url: "https://www.paiscircular.cl/economia-circular/expertos-analizan-los-ejes-del-decreto-de-metas-para-pilas-y-aparatos-electricos-y-electronicos/" },
+  { date: "22 jul 2025", title: "Categorías y excepciones del decreto",
+    url: "https://www.paiscircular.cl/economia-circular/especialistas-explican-los-porque-de-las-categorias-y-excepciones-del-decreto-de-metas-para-residuos-de-aparatos-electricos-y-electronicos-pilas/" },
+  { date: "18 mar 2026", title: "Aplazamiento toma de razón",
+    url: "https://www.paiscircular.cl/economia-circular/cuanto-puede-afectar-al-avance-de-la-ley-rep-el-aplazamiento-de-la-toma-de-razon-del-decreto-de-metas-para-pilas-aparatos-electricos-y-electronicos/" },
+  { date: "23 abr 2026", title: "Contraloría tomó razón del decreto",
+    url: "https://www.paiscircular.cl/economia-circular/contraloria-tomo-razon-del-decreto-de-metas-para-pilas-aparatos-electricos-y-electronicos-enviando-positiva-senal-a-los-regulados/" },
+];
+
+const WEBINAR_PC = {
+  title: "Residuos de AEE: Claves del nuevo reglamento REP",
+  desc: "Seminario web organizado por País Circular para analizar el alcance, las metas y las obligaciones del DS 22/2025.",
+  moderador: "Pablo Badenier",
+  panelistas: [
+    "Paz Maluenda — Oficina de Economía Circular, MMA",
+    "Mitzy Lagos — Economía Circular, Midas Chile",
+    "Víctor Hugo Moncada — Hisense Gorenje",
+  ],
+};
+
+// Perfiles de productor: qué metas aplican según arts. 21–25.
+// PFV: cumple meta PFV; los sistemas integrados exclusivamente por productores
+// de PFV NO están sujetos a la meta general (art. 21 inc. final).
+const PERFILES_PRODUCTOR = [
+  { id: "pilas",  label: "Pilas (no plomo-ácido)",
+    metas: ["general"],
+    ref: "Art. 21",
+    note: "Cumple la meta general junto con los demás AEE (excepto PFV). Pilas extraíbles se contabilizan separadas; no extraíbles, como parte del AEE (art. 5°)." },
+  { id: "ait",    label: "Refrigeradores · A/C · AIT",
+    metas: ["general", "ait"],
+    ref: "Arts. 21, 23",
+    note: "Cumple meta general + meta específica AIT. Gestión sujeta a NCh 3241:2017 y NCh 3301:2017 (art. 37 N°1)." },
+  { id: "pfv",    label: "Paneles fotovoltaicos",
+    metas: ["pfv"],
+    ref: "Art. 25 · Art. 21 inc. final",
+    note: "Solo cumple meta PFV. Los sistemas integrados exclusivamente por productores de PFV NO están sujetos a la meta general (art. 21 inc. final)." },
+  { id: "general",label: "Celulares · Computadores · Electrodomésticos",
+    metas: ["general"],
+    ref: "Art. 21",
+    note: "Cumple la meta general del art. 21 (3% → 45% en 10 años). Sin meta específica adicional." },
+];
+
 // ─── SECTIONS ────────────────────────────────────────────────────
 const PAGES = [
   { id: "inicio",      label: "Resumen",       icon: "📋" },
@@ -176,11 +223,12 @@ const s = {
 
 function Chip({ active, onClick, children, color }) {
   return (
-    <button onClick={onClick} style={{
+    <button onClick={onClick} className={active ? "pc-chip-active" : "pc-chip"} style={{
       padding: "7px 14px", fontSize: 12, fontWeight: 600, borderRadius: 20, cursor: "pointer",
-      border: active ? "none" : `1px solid ${T.border}`,
-      background: active ? (color || T.accent) : "transparent",
-      color: active ? "#fff" : T.textSec, transition: "all 0.2s", fontFamily: T.fontSans,
+      border: active ? "1px solid transparent" : `1.5px solid ${T.border}`,
+      background: active ? (color || T.accent) : T.bg,
+      color: active ? "#fff" : T.textSec, transition: "all 0.18s", fontFamily: T.fontSans,
+      boxShadow: active ? "0 1px 3px rgba(0,0,0,0.08)" : "none",
     }}>{children}</button>
   );
 }
@@ -224,6 +272,63 @@ function MetaBar({ pct, max, color }) {
   );
 }
 
+function Onboarding({ onStart }) {
+  return (
+    <div style={{
+      maxWidth: 800, margin: "0 auto", fontFamily: T.fontSans, color: T.text,
+      border: `1px solid ${T.border}`, borderRadius: 12, overflow: "hidden", background: T.bg,
+    }}>
+      <div style={{
+        position: "relative",
+        background: "linear-gradient(135deg, #1B4332 0%, #2D6A4F 50%, #1D9E75 100%)",
+        padding: "56px 32px 48px", color: "#fff", textAlign: "center",
+      }}>
+        <div style={{
+          position: "absolute", inset: 0, opacity: 0.08,
+          backgroundImage: "radial-gradient(circle at 1px 1px, #fff 1px, transparent 0)",
+          backgroundSize: "22px 22px", pointerEvents: "none",
+        }} />
+        <img src="https://www.paiscircular.cl/wp-content/uploads/2022/08/cropped-Logo-Pais-Letras-Negras-270x270.png"
+          alt="País Circular" style={{
+            height: 64, width: 64, objectFit: "contain", background: "#fff",
+            borderRadius: 12, padding: 8, marginBottom: 18,
+            boxShadow: "0 6px 20px rgba(0,0,0,0.18)",
+          }} />
+        <div style={{
+          fontSize: 11, letterSpacing: "0.18em", textTransform: "uppercase",
+          opacity: 0.85, marginBottom: 12, fontWeight: 600,
+        }}>País Circular presenta</div>
+        <h1 style={{
+          fontSize: 28, fontWeight: 700, lineHeight: 1.25, margin: "0 0 14px",
+          fontFamily: T.font, letterSpacing: "-0.02em", maxWidth: 560, marginLeft: "auto", marginRight: "auto",
+        }}>
+          El primer navegador interactivo de un decreto de metas de la Ley REP en Chile
+        </h1>
+        <p style={{
+          fontSize: 15, lineHeight: 1.65, margin: "0 auto 28px", maxWidth: 520,
+          opacity: 0.94, fontFamily: T.font,
+        }}>
+          Explore el DS 22/2025: qué productos regula, qué metas establece, qué obligaciones impone y a quién afecta.
+        </p>
+        <button onClick={onStart} className="pc-cta" style={{
+          padding: "13px 26px", fontSize: 14, fontWeight: 700, borderRadius: 10,
+          border: "none", background: "#fff", color: "#1B4332", cursor: "pointer",
+          fontFamily: T.fontSans, letterSpacing: "0.01em",
+          boxShadow: "0 4px 14px rgba(0,0,0,0.18)", transition: "all 0.2s",
+        }}>
+          Explorar el decreto →
+        </button>
+      </div>
+      <div style={{
+        padding: "18px 24px", fontSize: 11, color: T.textHint, textAlign: "center",
+        borderTop: `1px solid ${T.border}`, lineHeight: 1.6, fontFamily: T.fontSans,
+      }}>
+        Decreto Supremo N° 22/2025 · Ministerio del Medio Ambiente · Diario Oficial 7 mayo 2026
+      </div>
+    </div>
+  );
+}
+
 function QuoteCard({ q }) {
   return (
     <div style={{ borderLeft: `2px solid ${T.accent}`, padding: "10px 16px", marginBottom: 12,
@@ -241,19 +346,38 @@ function QuoteCard({ q }) {
 // ─── MAIN COMPONENT ──────────────────────────────────────────────
 
 export default function NavegadorDS22() {
+  const [showOnboarding, setShowOnboarding] = useState(true);
   const [page, setPage] = useState("inicio");
   const [search, setSearch] = useState("");
   const [metaCat, setMetaCat] = useState("comparativa");
   const [actorFilter, setActorFilter] = useState("todos");
+  const [perfil, setPerfil] = useState(null);
   const contentRef = useRef(null);
 
   const navigate = useCallback((p) => {
-    setPage(p); setSearch(""); setMetaCat("comparativa"); setActorFilter("todos");
+    setPage(p); setSearch(""); setMetaCat("comparativa"); setActorFilter("todos"); setPerfil(null);
   }, []);
 
   useEffect(() => {
     if (contentRef.current) contentRef.current.scrollTo({ top: 0, behavior: "smooth" });
   }, [page]);
+
+  // Auto-resize del iframe en embed (postMessage al parent).
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const send = () => {
+      const h = document.getElementById("root")?.scrollHeight || document.body.scrollHeight;
+      try { window.parent.postMessage({ type: "resize", height: h }, "*"); } catch (_) {}
+    };
+    send();
+    const obs = new ResizeObserver(send);
+    obs.observe(document.body);
+    return () => obs.disconnect();
+  }, [page, showOnboarding, metaCat, actorFilter, perfil]);
+
+  if (showOnboarding) {
+    return <Onboarding onStart={() => setShowOnboarding(false)} />;
+  }
 
   const q = search.toLowerCase().trim();
 
@@ -280,51 +404,129 @@ export default function NavegadorDS22() {
     <div style={{ maxWidth: 800, margin: "0 auto", fontFamily: T.fontSans, color: T.text,
       border: `1px solid ${T.border}`, borderRadius: 12, overflow: "hidden", background: T.bg }}>
 
+      {/* INLINE HOVER STYLES */}
+      <style>{`
+        .pc-tab:hover { color: #2D6A4F !important; background: #F1F8F4 !important; }
+        .pc-chip:hover { border-color: #2D6A4F !important; color: #1B4332 !important; background: #F1F8F4 !important; box-shadow: 0 1px 4px rgba(45,106,79,0.10); }
+        .pc-chip-active:hover { filter: brightness(0.96); box-shadow: 0 2px 8px rgba(0,0,0,0.10); }
+        .pc-btn:hover { border-color: #2D6A4F !important; box-shadow: 0 2px 8px rgba(45,106,79,0.12); transform: translateY(-1px); }
+        .pc-cta:hover { transform: translateY(-1px); box-shadow: 0 8px 22px rgba(0,0,0,0.22) !important; }
+        .pc-link:hover { color: #0F6E56 !important; border-bottom-color: #0F6E56 !important; }
+        .pc-card-link:hover { border-color: #2D6A4F !important; box-shadow: 0 6px 18px rgba(27,67,50,0.10); transform: translateY(-2px); }
+        .pc-sponsor:hover { filter: brightness(1.04); }
+        @media (max-width: 520px) {
+          .pc-header-top { flex-direction: column; align-items: flex-start !important; }
+          .pc-header-top > div:last-child { text-align: left !important; }
+          .pc-title-h1 { font-size: 21px !important; }
+        }
+      `}</style>
+
       {/* SPONSOR BANNER */}
-      <div style={{ background: T.bgMuted, padding: "8px 20px", fontSize: 11, color: T.textHint,
-        textAlign: "center", letterSpacing: "0.04em", borderBottom: `1px solid ${T.border}` }}>
-        ESPACIO DISPONIBLE PARA AUSPICIADOR · <a href="mailto:info@paiscircular.cl" style={{ color: T.accent, textDecoration: "none" }}>info@paiscircular.cl</a>
-      </div>
+      <a href="mailto:info@paiscircular.cl?subject=Auspicio%20navegador%20DS%2022%2F2025"
+        className="pc-sponsor"
+        style={{
+          display: "block", position: "relative", textDecoration: "none",
+          background: "linear-gradient(90deg, #1B4332 0%, #2D6A4F 100%)",
+          color: "#fff", padding: "12px 22px", borderBottom: `1px solid ${T.border}`,
+          transition: "filter 0.2s", overflow: "hidden",
+        }}>
+        <span style={{
+          position: "absolute", inset: 0, opacity: 0.08,
+          backgroundImage: "radial-gradient(circle at 1px 1px, #fff 1px, transparent 0)",
+          backgroundSize: "16px 16px", pointerEvents: "none",
+        }} />
+        <div style={{
+          position: "relative", display: "flex", alignItems: "center", justifyContent: "center",
+          gap: 12, flexWrap: "wrap", fontFamily: T.fontSans,
+        }}>
+          <span style={{
+            fontSize: 10, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase",
+            background: "rgba(255,255,255,0.16)", padding: "3px 8px", borderRadius: 4,
+          }}>
+            Espacio disponible
+          </span>
+          <span style={{ fontSize: 13, fontWeight: 600, letterSpacing: "0.01em" }}>
+            Auspicie este espacio
+          </span>
+          <span style={{ fontSize: 12, opacity: 0.85 }}>
+            info@paiscircular.cl →
+          </span>
+        </div>
+      </a>
 
       {/* HEADER */}
-      <div style={{ padding: "18px 24px 14px", borderBottom: `1px solid ${T.border}` }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+      <div style={{ padding: "26px 28px 22px", borderBottom: `1px solid ${T.border}`, background: T.bg }}>
+        <div className="pc-header-top" style={{
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          gap: 16, marginBottom: 22, flexWrap: "wrap",
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
             <img src="https://www.paiscircular.cl/wp-content/uploads/2022/08/cropped-Logo-Pais-Letras-Negras-270x270.png"
-              alt="País Circular" style={{ height: 34, width: 34, objectFit: "contain" }} />
+              alt="País Circular" style={{ height: 56, width: 56, objectFit: "contain" }} />
             <div>
-              <div style={{ fontWeight: 700, fontSize: 15, color: T.accentDark, letterSpacing: "-0.01em" }}>País Circular</div>
-              <div style={{ fontSize: 11, color: T.textHint }}>Herramienta interactiva · Ley REP</div>
+              <div style={{
+                fontWeight: 700, fontSize: 19, color: T.text, letterSpacing: "-0.015em",
+                fontFamily: T.fontSans, lineHeight: 1.15,
+              }}>País Circular</div>
+              <div style={{
+                fontSize: 12, color: T.textSec, marginTop: 3, fontFamily: T.font, fontStyle: "italic",
+              }}>Una herramienta de País Circular</div>
             </div>
           </div>
-          <div style={{ textAlign: "right", fontSize: 11, color: T.textHint }}>
-            <div>DO: 7 mayo 2026</div>
-            <div>Metas: mayo 2028</div>
+          <div style={{ textAlign: "right", fontSize: 11, color: T.textHint, lineHeight: 1.6 }}>
+            <div><strong style={{ color: T.textSec, fontWeight: 600 }}>DO:</strong> 7 mayo 2026</div>
+            <div><strong style={{ color: T.textSec, fontWeight: 600 }}>Metas:</strong> mayo 2028</div>
+            <a href="https://www.diariooficial.interior.gob.cl/edicionelectronica/index.php?date=07-05-2026&edition=44443"
+              target="_blank" rel="noopener noreferrer" className="pc-link"
+              style={{
+                display: "inline-block", marginTop: 6, fontSize: 11, fontWeight: 600,
+                color: T.accent, textDecoration: "none", borderBottom: `1px solid ${T.accentLight}`,
+                paddingBottom: 1, transition: "all 0.15s",
+              }}>
+              Ver en Diario Oficial ↗
+            </a>
+            <div style={{ fontSize: 10, color: T.textHint, marginTop: 2, fontStyle: "italic" }}>
+              (edición 7 mayo 2026)
+            </div>
           </div>
         </div>
-        <div style={{ fontSize: 11, color: T.accent, fontWeight: 700, letterSpacing: "0.05em", textTransform: "uppercase", marginBottom: 6 }}>
+        <div style={{
+          fontSize: 11, color: T.accent, fontWeight: 700, letterSpacing: "0.06em",
+          textTransform: "uppercase", marginBottom: 10,
+        }}>
           Decreto Supremo N° 22/2025 · Ministerio del Medio Ambiente
         </div>
-        <h1 style={{ fontSize: 21, fontWeight: 700, lineHeight: 1.3, margin: "0 0 6px", fontFamily: T.font, letterSpacing: "-0.02em" }}>
-          Navegador: pilas y aparatos eléctricos y electrónicos
+        <h1 style={{
+          fontSize: 26, fontWeight: 700, lineHeight: 1.22, margin: "0 0 10px",
+          fontFamily: T.font, letterSpacing: "-0.025em", color: T.text,
+        }}>
+          Productos prioritarios de la Ley REP: pilas y aparatos eléctricos y electrónicos
         </h1>
         <p style={{ fontSize: 14, color: T.textSec, lineHeight: 1.6, margin: 0, fontFamily: T.font }}>
-          Metas, obligaciones, plazos y exclusiones del decreto que regula el cuarto y quinto producto prioritario de la Ley 20.920.
+          Navegador interactivo del DS 22/2025 — Metas, obligaciones, plazos y exclusiones.
+        </p>
+        <p style={{ fontSize: 11, color: T.textHint, lineHeight: 1.55, margin: "10px 0 0", fontStyle: "italic" }}>
+          Nota: el Diario Oficial redirige a la edición vigente del día. Si el enlace no muestra la edición del 7 de mayo de 2026,
+          búsquela manualmente en «Ediciones Anteriores».
         </p>
       </div>
 
-      {/* NAV TABS */}
-      <div style={{ display: "flex", borderBottom: `1px solid ${T.border}`, overflowX: "auto", background: T.bg }}>
+      {/* NAV TABS (sticky) */}
+      <div style={{
+        display: "flex", borderBottom: `1px solid ${T.border}`, overflowX: "auto",
+        background: T.bg, position: "sticky", top: 0, zIndex: 10,
+        boxShadow: "0 1px 0 rgba(0,0,0,0.02)",
+      }}>
         {PAGES.map(p => (
-          <button key={p.id} onClick={() => navigate(p.id)} style={{
-            padding: "11px 16px", fontSize: 12, fontWeight: 600, cursor: "pointer", border: "none",
+          <button key={p.id} onClick={() => navigate(p.id)} className={page === p.id ? undefined : "pc-tab"} style={{
+            padding: "13px 18px", fontSize: 12.5, fontWeight: 600, cursor: "pointer", border: "none",
             background: "transparent", whiteSpace: "nowrap", fontFamily: T.fontSans, display: "flex",
-            alignItems: "center", gap: 4,
-            color: page === p.id ? T.accent : T.textHint,
+            alignItems: "center", gap: 5,
+            color: page === p.id ? T.accent : T.textSec,
             borderBottom: page === p.id ? `2.5px solid ${T.accent}` : "2.5px solid transparent",
             transition: "all 0.15s",
           }}>
-            <span style={{ fontSize: 13 }}>{p.icon}</span> {p.label}
+            <span style={{ fontSize: 14 }}>{p.icon}</span> {p.label}
           </button>
         ))}
       </div>
@@ -372,13 +574,13 @@ export default function NavegadorDS22() {
 
             <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 16 }}>
               {PAGES.filter(p => p.id !== "inicio").map(p => (
-                <button key={p.id} onClick={() => navigate(p.id)} style={{
+                <button key={p.id} onClick={() => navigate(p.id)} className="pc-btn" style={{
                   padding: "10px 18px", fontSize: 13, fontWeight: 600, borderRadius: T.radius,
-                  border: `1px solid ${T.border}`, background: T.bg, cursor: "pointer",
-                  fontFamily: T.fontSans, color: T.text, display: "flex", alignItems: "center", gap: 5,
-                  transition: "all 0.15s",
+                  border: `1.5px solid ${T.border}`, background: T.bg, cursor: "pointer",
+                  fontFamily: T.fontSans, color: T.text, display: "flex", alignItems: "center", gap: 6,
+                  transition: "all 0.18s",
                 }}>
-                  <span>{p.icon}</span> {p.label}
+                  <span>{p.icon}</span> Explorar {p.label.toLowerCase()}
                 </button>
               ))}
             </div>
@@ -388,6 +590,72 @@ export default function NavegadorDS22() {
         {/* ═══ METAS ═══ */}
         {page === "metas" && (
           <div>
+            {/* Filtro: ¿Qué me toca a mí? */}
+            <div style={{
+              background: T.bgAlt, border: `1px solid ${T.border}`, borderRadius: T.radius,
+              padding: "14px 16px", marginBottom: 18,
+            }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 10 }}>
+                <span style={{ fontSize: 14 }}>🎯</span>
+                <span style={{ fontSize: 13, fontWeight: 700, color: T.text, fontFamily: T.fontSans }}>
+                  ¿Qué me toca a mí?
+                </span>
+                {perfil && (
+                  <button onClick={() => setPerfil(null)} className="pc-link" style={{
+                    marginLeft: "auto", background: "transparent", border: "none", cursor: "pointer",
+                    fontSize: 11, color: T.accent, fontWeight: 600, fontFamily: T.fontSans,
+                  }}>Limpiar ✕</button>
+                )}
+              </div>
+              <div style={{ fontSize: 12, color: T.textSec, marginBottom: 12, lineHeight: 1.55, fontFamily: T.font }}>
+                Seleccione el tipo de producto que introduce al mercado para ver las metas que le aplican según los arts. 21–25.
+              </div>
+              <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                {PERFILES_PRODUCTOR.map(p => (
+                  <Chip key={p.id} active={perfil === p.id} onClick={() => {
+                    setPerfil(p.id);
+                    setMetaCat(p.metas[0] === "general" ? "comparativa" : p.metas[0]);
+                  }}>Soy productor de {p.label}</Chip>
+                ))}
+              </div>
+              {perfil && (() => {
+                const sel = PERFILES_PRODUCTOR.find(x => x.id === perfil);
+                return (
+                  <div style={{
+                    marginTop: 14, padding: "12px 14px",
+                    background: T.bg, border: `1px solid ${T.border}`, borderRadius: T.radiusSm,
+                  }}>
+                    <div style={{ fontSize: 12, color: T.textHint, marginBottom: 6, fontFamily: T.fontSans }}>
+                      Metas aplicables <span style={s.artRef}>{sel.ref}</span>
+                    </div>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 8 }}>
+                      {sel.metas.map(mid => {
+                        const c = CATS.find(x => x.id === mid) || { label: "Meta general", color: T.accent };
+                        return (
+                          <span key={mid} style={{
+                            display: "inline-flex", alignItems: "center", gap: 5,
+                            padding: "4px 10px", borderRadius: 14, fontSize: 11, fontWeight: 700,
+                            background: c.color, color: "#fff", fontFamily: T.fontSans,
+                          }}>✓ {c.label}</span>
+                        );
+                      })}
+                      {!sel.metas.includes("general") && (
+                        <span style={{
+                          display: "inline-flex", alignItems: "center", gap: 5,
+                          padding: "4px 10px", borderRadius: 14, fontSize: 11, fontWeight: 600,
+                          background: T.bgMuted, color: T.textHint, fontFamily: T.fontSans,
+                          textDecoration: "line-through",
+                        }}>Meta general</span>
+                      )}
+                    </div>
+                    <div style={{ fontSize: 12.5, color: T.textSec, lineHeight: 1.65, fontFamily: T.font }}>
+                      {sel.note}
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+
             <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 18 }}>
               <Chip active={metaCat === "comparativa"} onClick={() => setMetaCat("comparativa")}>Comparativa</Chip>
               {CATS.map(c => (
@@ -619,6 +887,88 @@ export default function NavegadorDS22() {
             </p>
             {filteredQuotes.length === 0 && <p style={{ textAlign: "center", color: T.textHint, padding: 32 }}>Sin resultados para "{search}"</p>}
             {filteredQuotes.map((x, i) => <QuoteCard key={i} q={x} />)}
+
+            {/* Cobertura editorial País Circular */}
+            <div style={{ marginTop: 28 }}>
+              <div style={{ borderTop: `1px solid ${T.border}`, paddingTop: 18, marginBottom: 14 }}>
+                <div style={{
+                  display: "inline-flex", alignItems: "center", gap: 6, fontSize: 11, fontWeight: 700,
+                  color: T.accentDark, background: T.accentLight, padding: "4px 12px", borderRadius: 20,
+                  letterSpacing: "0.02em",
+                }}>
+                  📰 Cobertura de País Circular
+                </div>
+              </div>
+              <p style={s.p}>
+                Seguimiento editorial del DS 22/2025 publicado en paiscircular.cl, desde los borradores en consulta hasta la toma de razón.
+              </p>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 10 }}>
+                {COBERTURA_PC.map((c, i) => (
+                  <a key={i} href={c.url} target="_blank" rel="noopener noreferrer" className="pc-card-link" style={{
+                    display: "block", padding: "14px 16px", borderRadius: T.radius,
+                    border: `1px solid ${T.border}`, background: T.bg, textDecoration: "none",
+                    transition: "all 0.18s",
+                  }}>
+                    <div style={{
+                      fontSize: 10, color: T.textHint, fontWeight: 600, letterSpacing: "0.04em",
+                      textTransform: "uppercase", marginBottom: 6, fontFamily: T.fontSans,
+                    }}>{c.date}</div>
+                    <div style={{
+                      fontSize: 13, fontWeight: 600, color: T.text, lineHeight: 1.4,
+                      marginBottom: 10, fontFamily: T.fontSans,
+                    }}>{c.title}</div>
+                    <div style={{ fontSize: 11, color: T.accent, fontWeight: 600, fontFamily: T.fontSans }}>
+                      Leer en País Circular →
+                    </div>
+                  </a>
+                ))}
+              </div>
+            </div>
+
+            {/* Webinar */}
+            <div style={{ marginTop: 28 }}>
+              <div style={{ borderTop: `1px solid ${T.border}`, paddingTop: 18, marginBottom: 14 }}>
+                <div style={{
+                  display: "inline-flex", alignItems: "center", gap: 6, fontSize: 11, fontWeight: 700,
+                  color: T.purple, background: "#F3F0FF", padding: "4px 12px", borderRadius: 20,
+                  letterSpacing: "0.02em",
+                }}>
+                  🎥 Seminario web País Circular
+                </div>
+              </div>
+              <div style={{
+                border: `1px solid ${T.border}`, borderRadius: T.radius, padding: "16px 18px",
+                background: T.bgAlt,
+              }}>
+                <div style={{
+                  fontSize: 15, fontWeight: 700, color: T.text, marginBottom: 6,
+                  fontFamily: T.font, lineHeight: 1.3,
+                }}>
+                  {WEBINAR_PC.title}
+                </div>
+                <p style={{
+                  fontSize: 13, color: T.textSec, lineHeight: 1.7, margin: "0 0 12px",
+                  fontFamily: T.font,
+                }}>
+                  {WEBINAR_PC.desc}
+                </p>
+                <div style={{ fontSize: 11, color: T.textHint, fontWeight: 600, letterSpacing: "0.04em",
+                  textTransform: "uppercase", marginBottom: 4, fontFamily: T.fontSans }}>
+                  Moderador
+                </div>
+                <div style={{ fontSize: 13, color: T.text, marginBottom: 10, fontFamily: T.font }}>
+                  {WEBINAR_PC.moderador}
+                </div>
+                <div style={{ fontSize: 11, color: T.textHint, fontWeight: 600, letterSpacing: "0.04em",
+                  textTransform: "uppercase", marginBottom: 4, fontFamily: T.fontSans }}>
+                  Panelistas
+                </div>
+                <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13, color: T.textSec,
+                  lineHeight: 1.75, fontFamily: T.font }}>
+                  {WEBINAR_PC.panelistas.map((p, i) => <li key={i}>{p}</li>)}
+                </ul>
+              </div>
+            </div>
           </div>
         )}
 
